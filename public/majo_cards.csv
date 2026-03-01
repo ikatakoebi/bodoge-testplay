@@ -1,93 +1,93 @@
-id,name,type,cost,text,count,color,image,template
-M1,魔剣,魔導具,2,"魔力3 聖者撃破：マナ＋1",1,#9b59b6,/card-images/majo/Card1.png,spell
-M2,杖,魔導具,2,"魔力3 聖者撃破：マナ＋1",1,#9b59b6,/card-images/majo/Card1-1.png,spell
-M3,杖,魔導具,2,"魔力3 聖者撃破：マナ＋1",1,#9b59b6,/card-images/majo/Card1-2.png,spell
-M4,魔導書,魔導具,2,"魔力2",1,#9b59b6,/card-images/majo/Card1-3.png,spell
-M5,魔導書,魔導具,2,"魔力1 支払いの際、タップでコスト-1",1,#9b59b6,/card-images/majo/Card1-4.png,spell
-M6,護符,魔導具,2,"魔力0 戦闘：魔力＋3。廃棄",1,#9b59b6,/card-images/majo/Card1-5.png,spell
-M7,魔剣,魔導具,3,"魔力4 聖者撃破：マナ＋1",1,#9b59b6,/card-images/majo/Card1-6.png,spell
-M8,杖,魔導具,3,"魔力4 聖者撃破：マナ＋1",1,#9b59b6,/card-images/majo/Card1-7.png,spell
-M9,杖,魔導具,3,"魔力4 聖者撃破：マナ＋1",1,#9b59b6,/card-images/majo/Card1-8.png,spell
-M10,魔導書,魔導具,3,"魔力3",1,#9b59b6,/card-images/majo/Card1-9.png,spell
-M11,魔導書,魔導具,3,"魔力2 支払いの際、タップでコスト-1",1,#9b59b6,/card-images/majo/Card1-10.png,spell
-M12,護符,魔導具,3,"魔力1 戦闘：魔力＋3。廃棄",1,#9b59b6,/card-images/majo/Card1-11.png,spell
-M13,魔剣,魔導具,4,"魔力5 聖者撃破：マナ＋1",1,#9b59b6,/card-images/majo/Card1-12.png,spell
-M14,杖,魔導具,4,"魔力5 聖者撃破：マナ＋1",1,#9b59b6,/card-images/majo/Card1-13.png,spell
-M15,杖,魔導具,4,"魔力5 聖者撃破：マナ＋1",1,#9b59b6,/card-images/majo/Card1-14.png,spell
-M16,杖,魔導具,4,"魔力4",1,#9b59b6,/card-images/majo/Card1-15.png,spell
-M17,水晶玉,魔導具,4,"魔力4",1,#9b59b6,/card-images/majo/Card1-16.png,spell
-M18,水晶玉,魔導具,4,"魔力3 支払いの際、タップでコスト-1",1,#9b59b6,/card-images/majo/Card1-17.png,spell
-M19,護符,魔導具,4,"魔力2 戦闘：魔力＋3。廃棄",1,#9b59b6,/card-images/majo/Card1-18.png,spell
-M20,魔剣,魔導具,5,"魔力5 聖者撃破：即時マナ＋1",1,#9b59b6,/card-images/majo/Card1-19.png,spell
-M21,魔剣,魔導具,5,"魔力5 聖者撃破：即時マナ＋1",1,#9b59b6,/card-images/majo/Card1-20.png,spell
-M22,魔剣,魔導具,5,"魔力5 聖者撃破：即時マナ＋1",1,#9b59b6,/card-images/majo/Card1-21.png,spell
-M23,水晶玉,魔導具,5,"魔力3 支払いの際、タップでコスト-2",1,#9b59b6,/card-images/majo/Card1-22.png,spell
-M24,護符,魔導具,5,"魔力3 戦闘：魔力＋3。廃棄",1,#9b59b6,/card-images/majo/Card1-23.png,spell
-M25,魔剣,魔導具,6,"魔力5 聖者撃破：即時マナ＋2",1,#9b59b6,/card-images/majo/Card1-24.png,spell
-M26,杖,魔導具,6,"[手持ちの最大魔力の魔導具の魔力+3]魔力として扱う",1,#9b59b6,/card-images/majo/Card1-25.png,spell
-M27,水晶玉,魔導具,6,"魔力4 いつでもアンタップしてよい",1,#9b59b6,/card-images/majo/Card1-26.png,spell
-M28,護符,魔導具,6,"魔力3 手番：勝利点＋1。廃棄",1,#9b59b6,/card-images/majo/Card1-27.png,spell
-M33,魔女,魔女,0,"魔力＋3 or マナ＋2",4,#e74c3c,/card-images/majo/Card1-28.png,unit
-M37,使い魔,使い魔,0,"使用済みフィールドを使う",4,#f39c12,/card-images/majo/Card1-32.png,unit
-M41,聖遺物,聖遺物,0,"戦闘：魔力＋2。マナ＋1。廃棄",1,#1abc9c,/card-images/majo/Card1-36.png,default
-M42,聖遺物,聖遺物,0,"戦闘：魔力＋2。マナ＋1。廃棄",1,#1abc9c,/card-images/majo/Card1-37.png,default
-M43,聖遺物,聖遺物,0,"手番：タップ済みの魔導具をアンタップ。廃棄",1,#1abc9c,/card-images/majo/Card1-38.png,default
-M44,聖遺物,聖遺物,0,"手番：タップ済みの魔導具をアンタップ。廃棄",1,#1abc9c,/card-images/majo/Card1-39.png,default
-M45,聖遺物,聖遺物,0,"セラフィムかガブリエルを所持していたら勝利点＋1",1,#1abc9c,/card-images/majo/Card1-40.png,default
-M46,聖遺物,聖遺物,0,"ウリエルかメタトロンを所持していたら勝利点＋1",1,#1abc9c,/card-images/majo/Card1-41.png,default
-M47,聖遺物,聖遺物,0,"ケルビムかアズラエルを所持していたら勝利点＋1",1,#1abc9c,/card-images/majo/Card1-42.png,default
-M48,聖遺物,聖遺物,0,"魔導具を4種類以上所持している場合、勝利点＋1",1,#1abc9c,/card-images/majo/Card1-43.png,default
-M49,聖遺物,聖遺物,0,"体力10の聖者を所持していたら勝利点＋1",1,#1abc9c,/card-images/majo/Card1-44.png,default
-M50,聖遺物,聖遺物,0,"護符を所持していたら勝利点＋1",1,#1abc9c,/card-images/majo/Card1-45.png,default
-M51,聖遺物,聖遺物,0,"[勝利点0の聖者]を所持している場合、勝利点＋1",1,#1abc9c,/card-images/majo/Card1-46.png,default
-M52,聖遺物,聖遺物,0,"手番：使い魔を未使用状態にする。廃棄",1,#1abc9c,/card-images/majo/Card1-47.png,default
-M53,聖遺物,聖遺物,0,"売り場の3コスト以下の魔導具をタダで1枚獲得。廃棄",1,#1abc9c,/card-images/majo/Card1-48.png,default
-M54,聖遺物,聖遺物,0,"魔導具の購入コストが1減る。（最低1）",1,#1abc9c,/card-images/majo/Card1-49.png,default
-M55,聖遺物,聖遺物,0,"スタートプレイヤートークン獲得時、マナ＋1",1,#1abc9c,/card-images/majo/Card1-50.png,default
-M56,聖遺物,聖遺物,0,"手番：タップマナをアンタップする。廃棄",1,#1abc9c,/card-images/majo/Card1-51.png,default
-M57,聖遺物,聖遺物,0,"手番：タップマナをアンタップする。廃棄",1,#1abc9c,/card-images/majo/Card1-52.png,default
-M58,聖遺物,聖遺物,0,"手番：タップマナをアンタップする。廃棄",1,#1abc9c,/card-images/majo/Card1-53.png,default
-M59,聖遺物,聖遺物,0,"手番：タップマナをアンタップする。廃棄",1,#1abc9c,/card-images/majo/Card1-54.png,default
-M60,聖遺物,聖遺物,0,"手番：手番終了後、追加の手番を行う。廃棄",1,#1abc9c,/card-images/majo/Card1-55.png,default
-M61,聖遺物,聖遺物,0,"手番：魔導具所持数と同じ数だけマナを獲得。廃棄",1,#1abc9c,/card-images/majo/Card1-56.png,default
-M62,聖遺物,聖遺物,0,"手番：勝利点所持数と同じ数だけマナを獲得。廃棄",1,#1abc9c,/card-images/majo/Card1-57.png,default
-M63,聖遺物,聖遺物,0,"手番：2マナをサプライに戻し、6マナを獲得。廃棄",1,#1abc9c,/card-images/majo/Card1-58.png,default
-M64,聖遺物,聖遺物,0,"手番：この手番中にマナを支払うなら、同じ数のマナを獲得。廃棄",1,#1abc9c,/card-images/majo/Card1-59.png,default
-M65,聖遺物,聖遺物,0,"手番：魔導具を1つ捨て、[捨てた魔導具のコスト+3]コストまでの魔導具を売り場から獲得。廃棄",1,#1abc9c,/card-images/majo/Card1-60.png,default
-M66,聖遺物,聖遺物,0,"手番：聖者を1つ捨て、4マナを獲得。廃棄",1,#1abc9c,/card-images/majo/Card1-61.png,default
-M67,聖遺物,聖遺物,0,"戦闘：戦闘終了後、追加で戦闘してもよい。廃棄",1,#1abc9c,/card-images/majo/Card1-62.png,default
-M71,セラフィム,聖者,1,"マナ＋1 / 体力3 / マナ3",1,#2ecc71,/card-images/majo/Card1-63.png,unit
-M72,ガブリエル,聖者,1,"マナ＋1 / 体力3 / マナ3",1,#2ecc71,/card-images/majo/Card1-64.png,unit
-M73,ウリエル,聖者,1,"マナ＋1 / 体力3 / マナ3",1,#2ecc71,/card-images/majo/Card1-65.png,unit
-M74,メタトロン,聖者,1,"マナ＋1 / 体力3 / マナ3",1,#2ecc71,/card-images/majo/Card1-66.png,unit
-M75,ケルビム,聖者,1,"マナ＋1 / 体力3 / マナ3",1,#2ecc71,/card-images/majo/Card1-67.png,unit
-M76,アズラエル,聖者,2,"マナ＋1 / 体力4 / マナ4",1,#2ecc71,/card-images/majo/Card1-68.png,unit
-M77,セラフィム,聖者,2,"マナ＋1 / 体力4 / マナ4",1,#2ecc71,/card-images/majo/Card1-69.png,unit
-M78,ガブリエル,聖者,2,"マナ＋1 / 体力4 / マナ4",1,#2ecc71,/card-images/majo/Card1-70.png,unit
-M79,ウリエル,聖者,2,"マナ＋1 / 体力4 / マナ4",1,#2ecc71,/card-images/majo/Card1-71.png,unit
-M80,メタトロン,聖者,2,"マナ＋1 / 体力4 / マナ4",1,#2ecc71,/card-images/majo/Card1-72.png,unit
-M81,ケルビム,聖者,1,"体力5 / マナ5 / 勝利点1",1,#2ecc71,/card-images/majo/Card1-73.png,unit
-M82,アズラエル,聖者,1,"体力5 / マナ5 / 勝利点1",1,#2ecc71,/card-images/majo/Card1-74.png,unit
-M83,セラフィム,聖者,1,"体力5 / マナ5 / 勝利点1",1,#2ecc71,/card-images/majo/Card1-75.png,unit
-M84,ガブリエル,聖者,1,"体力5 / マナ5 / 勝利点1",1,#2ecc71,/card-images/majo/Card1-76.png,unit
-M85,ウリエル,聖者,2,"体力6 / マナ6 / 勝利点1",1,#2ecc71,/card-images/majo/Card1-77.png,unit
-M86,メタトロン,聖者,2,"体力6 / マナ6 / 勝利点1",1,#2ecc71,/card-images/majo/Card1-78.png,unit
-M87,ケルビム,聖者,2,"体力6 / マナ6 / 勝利点1",1,#2ecc71,/card-images/majo/Card1-79.png,unit
-M88,アズラエル,聖者,2,"体力6 / マナ6 / 勝利点1",1,#2ecc71,/card-images/majo/Card1-80.png,unit
-M89,セラフィム,聖者,1,"体力8 / マナ8 / 勝利点2",1,#2ecc71,/card-images/majo/Card1-81.png,unit
-M90,ガブリエル,聖者,1,"体力9 / マナ9 / 勝利点2",1,#2ecc71,/card-images/majo/Card1-82.png,unit
-M91,ウリエル,聖者,1,"体力10 / マナ10 / 勝利点2",1,#2ecc71,/card-images/majo/Card1-83.png,unit
-M92,メタトロン,聖者,2,"体力11 / マナ11 / 勝利点2",1,#2ecc71,/card-images/majo/Card1-84.png,unit
-M93,ケルビム,聖者,2,"体力12 / マナ12 / 勝利点2",1,#2ecc71,/card-images/majo/Card1-85.png,unit
-M94,アズラエル,聖者,2,"体力13 / マナ13 / 勝利点3",1,#2ecc71,/card-images/majo/Card1-86.png,unit
-M110,研究,基本,0,"魔道具を好きなだけ獲得",1,#7f8c8d,/card-images/majo/Card1-87.png,default
-M111,横暴,基本,2,"聖者1体と戦う",1,#7f8c8d,/card-images/majo/Card1-88.png,default
-M112,魔具店,基本,1,"マナ2個獲得",1,#7f8c8d,/card-images/majo/Card1-89.png,default
-M113,大聖堂,基本,1,"スタートプレイヤートークンとマナ1個獲得",1,#7f8c8d,/card-images/majo/Card1-90.png,default
-M114,生贄,基本,5,"聖者と戦う。このフィールドは何度でも使用可能",1,#7f8c8d,/card-images/majo/Card1-91.png,default
-M115,祈祷,基本,1,"聖遺物を1枚捨て、3マナを獲得",1,#7f8c8d,/card-images/majo/Card1-92.png,default
-M126,魔導具コレクター,実績,0,"魔導具を5つ以上所持する",1,#3498db,/card-images/majo/Card1-93.png,default
-M127,最大火力,実績,0,"14以上の魔力で聖者を撃破する",1,#3498db,/card-images/majo/Card1-94.png,default
-M128,撃破王,実績,0,"聖者を5つ以上所持する",1,#3498db,/card-images/majo/Card1-95.png,default
-M129,スペシャリスト,実績,0,"任意の種類の魔導具を3つ以上所持する",1,#3498db,/card-images/majo/Card1-96.png,default
-M130,探求者,実績,0,"聖遺物を5つ以上所持する",1,#3498db,/card-images/majo/Card1-97.png,default
+id,name,type,tag,cost,text,count,color,image,template,area
+M1,魔剣,魔導具,魔導具,2,"魔力3 聖者撃破：マナ＋1",1,#9b59b6,/card-images/majo/Card1.png,spell,magic_supply
+M2,杖,魔導具,魔導具,2,"魔力3 聖者撃破：マナ＋1",1,#9b59b6,/card-images/majo/Card1-1.png,spell,magic_supply
+M3,杖,魔導具,魔導具,2,"魔力3 聖者撃破：マナ＋1",1,#9b59b6,/card-images/majo/Card1-2.png,spell,magic_supply
+M4,魔導書,魔導具,魔導具,2,"魔力2",1,#9b59b6,/card-images/majo/Card1-3.png,spell,magic_supply
+M5,魔導書,魔導具,魔導具,2,"魔力1 支払いの際、タップでコスト-1",1,#9b59b6,/card-images/majo/Card1-4.png,spell,magic_supply
+M6,護符,魔導具,魔導具,2,"魔力0 戦闘：魔力＋3。廃棄",1,#9b59b6,/card-images/majo/Card1-5.png,spell,magic_supply
+M7,魔剣,魔導具,魔導具,3,"魔力4 聖者撃破：マナ＋1",1,#9b59b6,/card-images/majo/Card1-6.png,spell,magic_supply
+M8,杖,魔導具,魔導具,3,"魔力4 聖者撃破：マナ＋1",1,#9b59b6,/card-images/majo/Card1-7.png,spell,magic_supply
+M9,杖,魔導具,魔導具,3,"魔力4 聖者撃破：マナ＋1",1,#9b59b6,/card-images/majo/Card1-8.png,spell,magic_supply
+M10,魔導書,魔導具,魔導具,3,"魔力3",1,#9b59b6,/card-images/majo/Card1-9.png,spell,magic_supply
+M11,魔導書,魔導具,魔導具,3,"魔力2 支払いの際、タップでコスト-1",1,#9b59b6,/card-images/majo/Card1-10.png,spell,magic_supply
+M12,護符,魔導具,魔導具,3,"魔力1 戦闘：魔力＋3。廃棄",1,#9b59b6,/card-images/majo/Card1-11.png,spell,magic_supply
+M13,魔剣,魔導具,魔導具,4,"魔力5 聖者撃破：マナ＋1",1,#9b59b6,/card-images/majo/Card1-12.png,spell,magic_supply
+M14,杖,魔導具,魔導具,4,"魔力5 聖者撃破：マナ＋1",1,#9b59b6,/card-images/majo/Card1-13.png,spell,magic_supply
+M15,杖,魔導具,魔導具,4,"魔力5 聖者撃破：マナ＋1",1,#9b59b6,/card-images/majo/Card1-14.png,spell,magic_supply
+M16,杖,魔導具,魔導具,4,"魔力4",1,#9b59b6,/card-images/majo/Card1-15.png,spell,magic_supply
+M17,水晶玉,魔導具,魔導具,4,"魔力4",1,#9b59b6,/card-images/majo/Card1-16.png,spell,magic_supply
+M18,水晶玉,魔導具,魔導具,4,"魔力3 支払いの際、タップでコスト-1",1,#9b59b6,/card-images/majo/Card1-17.png,spell,magic_supply
+M19,護符,魔導具,魔導具,4,"魔力2 戦闘：魔力＋3。廃棄",1,#9b59b6,/card-images/majo/Card1-18.png,spell,magic_supply
+M20,魔剣,魔導具,魔導具,5,"魔力5 聖者撃破：即時マナ＋1",1,#9b59b6,/card-images/majo/Card1-19.png,spell,magic_supply
+M21,魔剣,魔導具,魔導具,5,"魔力5 聖者撃破：即時マナ＋1",1,#9b59b6,/card-images/majo/Card1-20.png,spell,magic_supply
+M22,魔剣,魔導具,魔導具,5,"魔力5 聖者撃破：即時マナ＋1",1,#9b59b6,/card-images/majo/Card1-21.png,spell,magic_supply
+M23,水晶玉,魔導具,魔導具,5,"魔力3 支払いの際、タップでコスト-2",1,#9b59b6,/card-images/majo/Card1-22.png,spell,magic_supply
+M24,護符,魔導具,魔導具,5,"魔力3 戦闘：魔力＋3。廃棄",1,#9b59b6,/card-images/majo/Card1-23.png,spell,magic_supply
+M25,魔剣,魔導具,魔導具,6,"魔力5 聖者撃破：即時マナ＋2",1,#9b59b6,/card-images/majo/Card1-24.png,spell,magic_supply
+M26,杖,魔導具,魔導具,6,"[手持ちの最大魔力の魔導具の魔力+3]魔力として扱う",1,#9b59b6,/card-images/majo/Card1-25.png,spell,magic_supply
+M27,水晶玉,魔導具,魔導具,6,"魔力4 いつでもアンタップしてよい",1,#9b59b6,/card-images/majo/Card1-26.png,spell,magic_supply
+M28,護符,魔導具,魔導具,6,"魔力3 手番：勝利点＋1。廃棄",1,#9b59b6,/card-images/majo/Card1-27.png,spell,magic_supply
+M33,魔女,魔女,魔女,0,"魔力＋3 or マナ＋2",4,#e74c3c,/card-images/majo/Card1-28.png,unit,p_witch
+M37,使い魔,使い魔,使い魔,0,"使用済みフィールドを使う",4,#f39c12,/card-images/majo/Card1-32.png,unit,p_witch
+M41,聖遺物,聖遺物,聖遺物,0,"戦闘：魔力＋2。マナ＋1。廃棄",1,#1abc9c,/card-images/majo/Card1-36.png,default,relic_deck
+M42,聖遺物,聖遺物,聖遺物,0,"戦闘：魔力＋2。マナ＋1。廃棄",1,#1abc9c,/card-images/majo/Card1-37.png,default,relic_deck
+M43,聖遺物,聖遺物,聖遺物,0,"手番：タップ済みの魔導具をアンタップ。廃棄",1,#1abc9c,/card-images/majo/Card1-38.png,default,relic_deck
+M44,聖遺物,聖遺物,聖遺物,0,"手番：タップ済みの魔導具をアンタップ。廃棄",1,#1abc9c,/card-images/majo/Card1-39.png,default,relic_deck
+M45,聖遺物,聖遺物,聖遺物,0,"セラフィムかガブリエルを所持していたら勝利点＋1",1,#1abc9c,/card-images/majo/Card1-40.png,default,relic_deck
+M46,聖遺物,聖遺物,聖遺物,0,"ウリエルかメタトロンを所持していたら勝利点＋1",1,#1abc9c,/card-images/majo/Card1-41.png,default,relic_deck
+M47,聖遺物,聖遺物,聖遺物,0,"ケルビムかアズラエルを所持していたら勝利点＋1",1,#1abc9c,/card-images/majo/Card1-42.png,default,relic_deck
+M48,聖遺物,聖遺物,聖遺物,0,"魔導具を4種類以上所持している場合、勝利点＋1",1,#1abc9c,/card-images/majo/Card1-43.png,default,relic_deck
+M49,聖遺物,聖遺物,聖遺物,0,"体力10の聖者を所持していたら勝利点＋1",1,#1abc9c,/card-images/majo/Card1-44.png,default,relic_deck
+M50,聖遺物,聖遺物,聖遺物,0,"護符を所持していたら勝利点＋1",1,#1abc9c,/card-images/majo/Card1-45.png,default,relic_deck
+M51,聖遺物,聖遺物,聖遺物,0,"[勝利点0の聖者]を所持している場合、勝利点＋1",1,#1abc9c,/card-images/majo/Card1-46.png,default,relic_deck
+M52,聖遺物,聖遺物,聖遺物,0,"手番：使い魔を未使用状態にする。廃棄",1,#1abc9c,/card-images/majo/Card1-47.png,default,relic_deck
+M53,聖遺物,聖遺物,聖遺物,0,"売り場の3コスト以下の魔導具をタダで1枚獲得。廃棄",1,#1abc9c,/card-images/majo/Card1-48.png,default,relic_deck
+M54,聖遺物,聖遺物,聖遺物,0,"魔導具の購入コストが1減る。（最低1）",1,#1abc9c,/card-images/majo/Card1-49.png,default,relic_deck
+M55,聖遺物,聖遺物,聖遺物,0,"スタートプレイヤートークン獲得時、マナ＋1",1,#1abc9c,/card-images/majo/Card1-50.png,default,relic_deck
+M56,聖遺物,聖遺物,聖遺物,0,"手番：タップマナをアンタップする。廃棄",1,#1abc9c,/card-images/majo/Card1-51.png,default,relic_deck
+M57,聖遺物,聖遺物,聖遺物,0,"手番：タップマナをアンタップする。廃棄",1,#1abc9c,/card-images/majo/Card1-52.png,default,relic_deck
+M58,聖遺物,聖遺物,聖遺物,0,"手番：タップマナをアンタップする。廃棄",1,#1abc9c,/card-images/majo/Card1-53.png,default,relic_deck
+M59,聖遺物,聖遺物,聖遺物,0,"手番：タップマナをアンタップする。廃棄",1,#1abc9c,/card-images/majo/Card1-54.png,default,relic_deck
+M60,聖遺物,聖遺物,聖遺物,0,"手番：手番終了後、追加の手番を行う。廃棄",1,#1abc9c,/card-images/majo/Card1-55.png,default,relic_deck
+M61,聖遺物,聖遺物,聖遺物,0,"手番：魔導具所持数と同じ数だけマナを獲得。廃棄",1,#1abc9c,/card-images/majo/Card1-56.png,default,relic_deck
+M62,聖遺物,聖遺物,聖遺物,0,"手番：勝利点所持数と同じ数だけマナを獲得。廃棄",1,#1abc9c,/card-images/majo/Card1-57.png,default,relic_deck
+M63,聖遺物,聖遺物,聖遺物,0,"手番：2マナをサプライに戻し、6マナを獲得。廃棄",1,#1abc9c,/card-images/majo/Card1-58.png,default,relic_deck
+M64,聖遺物,聖遺物,聖遺物,0,"手番：この手番中にマナを支払うなら、同じ数のマナを獲得。廃棄",1,#1abc9c,/card-images/majo/Card1-59.png,default,relic_deck
+M65,聖遺物,聖遺物,聖遺物,0,"手番：魔導具を1つ捨て、[捨てた魔導具のコスト+3]コストまでの魔導具を売り場から獲得。廃棄",1,#1abc9c,/card-images/majo/Card1-60.png,default,relic_deck
+M66,聖遺物,聖遺物,聖遺物,0,"手番：聖者を1つ捨て、4マナを獲得。廃棄",1,#1abc9c,/card-images/majo/Card1-61.png,default,relic_deck
+M67,聖遺物,聖遺物,聖遺物,0,"戦闘：戦闘終了後、追加で戦闘してもよい。廃棄",1,#1abc9c,/card-images/majo/Card1-62.png,default,relic_deck
+M71,セラフィム,聖者,聖者,1,"マナ＋1 / 体力3 / マナ3",1,#2ecc71,/card-images/majo/Card1-63.png,unit,saint_deck
+M72,ガブリエル,聖者,聖者,1,"マナ＋1 / 体力3 / マナ3",1,#2ecc71,/card-images/majo/Card1-64.png,unit,saint_deck
+M73,ウリエル,聖者,聖者,1,"マナ＋1 / 体力3 / マナ3",1,#2ecc71,/card-images/majo/Card1-65.png,unit,saint_deck
+M74,メタトロン,聖者,聖者,1,"マナ＋1 / 体力3 / マナ3",1,#2ecc71,/card-images/majo/Card1-66.png,unit,saint_deck
+M75,ケルビム,聖者,聖者,1,"マナ＋1 / 体力3 / マナ3",1,#2ecc71,/card-images/majo/Card1-67.png,unit,saint_deck
+M76,アズラエル,聖者,聖者,2,"マナ＋1 / 体力4 / マナ4",1,#2ecc71,/card-images/majo/Card1-68.png,unit,saint_deck
+M77,セラフィム,聖者,聖者,2,"マナ＋1 / 体力4 / マナ4",1,#2ecc71,/card-images/majo/Card1-69.png,unit,saint_deck
+M78,ガブリエル,聖者,聖者,2,"マナ＋1 / 体力4 / マナ4",1,#2ecc71,/card-images/majo/Card1-70.png,unit,saint_deck
+M79,ウリエル,聖者,聖者,2,"マナ＋1 / 体力4 / マナ4",1,#2ecc71,/card-images/majo/Card1-71.png,unit,saint_deck
+M80,メタトロン,聖者,聖者,2,"マナ＋1 / 体力4 / マナ4",1,#2ecc71,/card-images/majo/Card1-72.png,unit,saint_deck
+M81,ケルビム,聖者,聖者,1,"体力5 / マナ5 / 勝利点1",1,#2ecc71,/card-images/majo/Card1-73.png,unit,saint_deck
+M82,アズラエル,聖者,聖者,1,"体力5 / マナ5 / 勝利点1",1,#2ecc71,/card-images/majo/Card1-74.png,unit,saint_deck
+M83,セラフィム,聖者,聖者,1,"体力5 / マナ5 / 勝利点1",1,#2ecc71,/card-images/majo/Card1-75.png,unit,saint_deck
+M84,ガブリエル,聖者,聖者,1,"体力5 / マナ5 / 勝利点1",1,#2ecc71,/card-images/majo/Card1-76.png,unit,saint_deck
+M85,ウリエル,聖者,聖者,2,"体力6 / マナ6 / 勝利点1",1,#2ecc71,/card-images/majo/Card1-77.png,unit,saint_deck
+M86,メタトロン,聖者,聖者,2,"体力6 / マナ6 / 勝利点1",1,#2ecc71,/card-images/majo/Card1-78.png,unit,saint_deck
+M87,ケルビム,聖者,聖者,2,"体力6 / マナ6 / 勝利点1",1,#2ecc71,/card-images/majo/Card1-79.png,unit,saint_deck
+M88,アズラエル,聖者,聖者,2,"体力6 / マナ6 / 勝利点1",1,#2ecc71,/card-images/majo/Card1-80.png,unit,saint_deck
+M89,セラフィム,聖者,聖者,1,"体力8 / マナ8 / 勝利点2",1,#2ecc71,/card-images/majo/Card1-81.png,unit,saint_deck
+M90,ガブリエル,聖者,聖者,1,"体力9 / マナ9 / 勝利点2",1,#2ecc71,/card-images/majo/Card1-82.png,unit,saint_deck
+M91,ウリエル,聖者,聖者,1,"体力10 / マナ10 / 勝利点2",1,#2ecc71,/card-images/majo/Card1-83.png,unit,saint_deck
+M92,メタトロン,聖者,聖者,2,"体力11 / マナ11 / 勝利点2",1,#2ecc71,/card-images/majo/Card1-84.png,unit,saint_deck
+M93,ケルビム,聖者,聖者,2,"体力12 / マナ12 / 勝利点2",1,#2ecc71,/card-images/majo/Card1-85.png,unit,saint_deck
+M94,アズラエル,聖者,聖者,2,"体力13 / マナ13 / 勝利点3",1,#2ecc71,/card-images/majo/Card1-86.png,unit,saint_deck
+M110,研究,基本,基本,0,"魔道具を好きなだけ獲得",1,#7f8c8d,/card-images/majo/Card1-87.png,default,field
+M111,横暴,基本,基本,2,"聖者1体と戦う",1,#7f8c8d,/card-images/majo/Card1-88.png,default,field
+M112,魔具店,基本,基本,1,"マナ2個獲得",1,#7f8c8d,/card-images/majo/Card1-89.png,default,field
+M113,大聖堂,基本,基本,1,"スタートプレイヤートークンとマナ1個獲得",1,#7f8c8d,/card-images/majo/Card1-90.png,default,field
+M114,生贄,基本,基本,5,"聖者と戦う。このフィールドは何度でも使用可能",1,#7f8c8d,/card-images/majo/Card1-91.png,default,field
+M115,祈祷,基本,基本,1,"聖遺物を1枚捨て、3マナを獲得",1,#7f8c8d,/card-images/majo/Card1-92.png,default,field
+M126,魔導具コレクター,実績,実績,0,"魔導具を5つ以上所持する",1,#3498db,/card-images/majo/Card1-93.png,default,achievement
+M127,最大火力,実績,実績,0,"14以上の魔力で聖者を撃破する",1,#3498db,/card-images/majo/Card1-94.png,default,achievement
+M128,撃破王,実績,実績,0,"聖者を5つ以上所持する",1,#3498db,/card-images/majo/Card1-95.png,default,achievement
+M129,スペシャリスト,実績,実績,0,"任意の種類の魔導具を3つ以上所持する",1,#3498db,/card-images/majo/Card1-96.png,default,achievement
+M130,探求者,実績,実績,0,"聖遺物を5つ以上所持する",1,#3498db,/card-images/majo/Card1-97.png,default,achievement

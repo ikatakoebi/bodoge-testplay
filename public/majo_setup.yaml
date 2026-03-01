@@ -1,0 +1,74 @@
+# 魔女ゲー セットアップ
+# カードをシャッフルしてから各エリアに配置する
+
+- action: shuffle
+
+# 魔導具 → 魔導具売り場 (全て表向き)
+- action: deal
+  to: magic_supply
+  filter:
+    tag: 魔導具
+  count: 999
+  faceUp: true
+
+# 魔女 → 各プレイヤーエリアに1枚ずつ
+- action: deal
+  to: p_witch
+  filter:
+    tag: 魔女
+  count: 1
+  perPlayer: true
+  faceUp: true
+
+# 使い魔 → 各プレイヤーエリアに1枚ずつ
+- action: deal
+  to: p_witch
+  filter:
+    tag: 使い魔
+  count: 1
+  perPlayer: true
+  faceUp: true
+
+# 聖遺物 → 4枚を売り場に表向き、残りをデッキへ (裏向き)
+- action: deal
+  to: relic_supply
+  filter:
+    tag: 聖遺物
+  count: 4
+  faceUp: true
+
+- action: deal
+  to: relic_deck
+  filter:
+    tag: 聖遺物
+  count: 999
+
+# 聖者 → 4枚を売り場に表向き、残りをデッキへ (裏向き)
+- action: deal
+  to: saint_supply
+  filter:
+    tag: 聖者
+  count: 4
+  faceUp: true
+
+- action: deal
+  to: saint_deck
+  filter:
+    tag: 聖者
+  count: 999
+
+# 実績 → 実績エリアに全て表向き
+- action: deal
+  to: achievement
+  filter:
+    tag: 実績
+  count: 999
+  faceUp: true
+
+# 基本カード → フィールドアクションエリアに全て表向き
+- action: deal
+  to: field
+  filter:
+    tag: 基本
+  count: 999
+  faceUp: true

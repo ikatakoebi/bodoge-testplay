@@ -121,19 +121,32 @@ export function executeSetup(
         const count = resolveCount(action.count, config.playerCount);
         const toKey = action.to || '_field';
 
+        // filter.tag が指定された場合、タグ一致カードをpoolから抽出して使う
+        let dealPool = pool;
+        if (action.filter?.tag) {
+          const tagVal = action.filter.tag;
+          dealPool = pool.filter((c) => (c.def as Record<string, unknown>).tag === tagVal);
+          pool = pool.filter((c) => (c.def as Record<string, unknown>).tag !== tagVal);
+        }
+
         if (action.perPlayer) {
           for (let p = 0; p < config.playerCount; p++) {
             const playerId = players[p]?.playerId || null;
-            const dealt = pool.splice(0, count).map((c) => ({ ...c, faceUp: action.faceUp, ownerId: playerId ?? undefined }));
+            const dealt = dealPool.splice(0, count).map((c) => ({ ...c, faceUp: action.faceUp, ownerId: playerId ?? undefined }));
             const key = `${toKey}_p${p}`;
             areaCards[key] = [...(areaCards[key] || []), ...dealt];
           }
           logs.push(`各プレイヤーに${count}枚ずつ配った`);
         } else {
-          const dealt = pool.splice(0, count).map((c) => ({ ...c, faceUp: action.faceUp }));
+          const dealt = dealPool.splice(0, count).map((c) => ({ ...c, faceUp: action.faceUp }));
           areaCards[toKey] = [...(areaCards[toKey] || []), ...dealt];
           const areaName = areaMap.get(toKey)?.name || toKey;
-          logs.push(`${count}枚を${areaName}に配った`);
+          logs.push(`${dealt.length}枚を${areaName}に配った`);
+        }
+
+        // 未配布のフィルタ済みカードをpoolに戻す
+        if (action.filter?.tag) {
+          pool = [...pool, ...dealPool];
         }
         break;
       }

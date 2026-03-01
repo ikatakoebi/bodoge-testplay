@@ -113,12 +113,24 @@ for (const c of allRows) {
   }
 }
 
+// エリアIDマッピング（tag → 初期配置エリア）
+const areaMap = {
+  '魔導具': 'magic_supply',
+  '魔女':   'p_witch',
+  '使い魔': 'p_witch',
+  '聖遺物': 'relic_deck',
+  '聖者':   'saint_deck',
+  '基本':   'field',
+  '実績':   'achievement',
+};
+
 // CSV出力
-const csvHeader = 'id,name,type,cost,text,count,color,image,template';
+const csvHeader = 'id,name,type,tag,cost,text,count,color,image,template,area';
 const csvRows = finalCards.map(c => {
   // カンマ含む可能性があるフィールドはクォート
   const safeText = `"${c.text.replace(/"/g, '""')}"`;
-  return `${c.id},${c.name},${c.type},${c.cost},${safeText},${c.count},${c.color},${c.image},${c.template}`;
+  const area = areaMap[c._bunrui] ?? '';
+  return `${c.id},${c.name},${c.type},${c._bunrui},${c.cost},${safeText},${c.count},${c.color},${c.image},${c.template},${area}`;
 });
 const output = [csvHeader, ...csvRows].join('\n') + '\n';
 
@@ -132,9 +144,5 @@ for (const c of finalCards) {
   summary[c._bunrui] = (summary[c._bunrui] ?? 0) + 1;
 }
 for (const [k, v] of Object.entries(summary)) {
-  console.log(`  ${k}: ${v}件`);
+  console.log(`  ${k}: ${v}件 → エリア:${areaMap[k]}`);
 }
-console.log('\n最初の5件:');
-finalCards.slice(0, 5).forEach(c => {
-  console.log(`  ${c.id} ${c.name} cost=${c.cost} "${c.text}" → ${c.image}`);
-});

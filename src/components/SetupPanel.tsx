@@ -48,6 +48,21 @@ export function SetupPanel() {
 
   const addToast = useUIStore((s) => s.addToast);
 
+  const handleSetupFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      if (text) {
+        setSetupText(text);
+        addToast('セットアップを読み込みました', 'success');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }, [addToast]);
+
   const toggleFormat = useCallback(() => {
     const parsed = parseSetupText(setupText);
     if (!parsed) {
@@ -127,6 +142,10 @@ export function SetupPanel() {
       </div>
 
       <div className="setup-editor-toggle">
+        <label className="setup-btn-small">
+          YAMLファイル
+          <input type="file" accept=".yaml,.yml,.json" onChange={handleSetupFile} hidden />
+        </label>
         <button className="setup-btn-small" onClick={() => setIsEditing(!isEditing)}>
           {isEditing ? '閉じる' : 'セットアップ編集'}
         </button>

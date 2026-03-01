@@ -1,0 +1,12 @@
+area_id,name,x,y,width,height,visibility,per_player,bg_color
+relic_supply,聖遺物売り場,-35,-60,72,21,public,false,#1abc9c40
+relic_deck,聖遺物デッキ,38,-60,15,21,hidden,false,#1abc9c20
+achievement,実績エリア,-35,-37,72,21,public,false,#3498db40
+saint_deck,聖者デッキ,-35,-14,30,21,hidden,false,#2ecc7120
+saint_supply,聖者売り場,-3,-14,60,21,public,false,#9b59b640
+magic_supply,魔導具売り場,-35,9,72,95,public,false,#9b59b620
+field,フィールドアクション,40,9,72,95,public,false,#7f8c8d20
+p_witch,魔女/使い魔,-110,-60,70,21,public,true,#e74c3c20
+p_tools,魔導具所持,-110,-16,70,21,public,true,#9b59b630
+p_saints,聖者所持,-110,28,70,21,public,true,#2ecc7130
+p_relics,聖遺物所持,-110,72,70,21,public,true,#1abc9c30
