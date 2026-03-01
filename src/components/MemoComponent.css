@@ -1,0 +1,117 @@
+.memo-component {
+  position: absolute;
+  border-radius: 2px;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+}
+
+.memo-component.memo-locked {
+  cursor: default;
+}
+
+.memo-header {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
+  padding: 2px 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.memo-author {
+  margin-right: auto;
+  font-size: 9px;
+  color: #888;
+  font-weight: bold;
+  align-self: center;
+}
+
+.memo-component:hover .memo-header {
+  opacity: 1;
+}
+
+.memo-color-btn,
+.memo-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 2px;
+  color: #666;
+  line-height: 1;
+}
+
+.memo-delete-btn {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.memo-color-btn:hover,
+.memo-delete-btn:hover {
+  color: #333;
+}
+
+.memo-color-picker {
+  display: flex;
+  gap: 4px;
+  padding: 4px 6px;
+  flex-wrap: wrap;
+}
+
+.memo-color-option {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #aaa;
+  border-radius: 2px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.memo-color-option.active {
+  border: 2px solid #333;
+}
+
+.memo-text {
+  padding: 4px 8px 8px;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 40px;
+  cursor: text;
+}
+
+.memo-textarea {
+  width: 100%;
+  flex: 1;
+  min-height: 60px;
+  border: none;
+  background: transparent;
+  padding: 4px 8px 8px;
+  font-size: 12px;
+  font-family: inherit;
+  color: #333;
+  resize: none;
+  outline: none;
+}
+
+.memo-resize-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+  opacity: 0;
+  transition: opacity 0.15s;
+  background: linear-gradient(135deg, transparent 50%, rgba(0, 0, 0, 0.3) 50%);
+  border-radius: 0 0 2px 0;
+}
+
+.memo-component:hover .memo-resize-handle {
+  opacity: 1;
+}

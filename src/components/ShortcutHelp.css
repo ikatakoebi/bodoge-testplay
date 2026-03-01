@@ -1,0 +1,73 @@
+.shortcut-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.shortcut-panel {
+  background: #1e1e2e;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 20px 24px;
+  min-width: 380px;
+  max-width: 500px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.shortcut-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.shortcut-header h3 {
+  margin: 0;
+  color: #eee;
+  font-size: 16px;
+}
+
+.shortcut-close {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.shortcut-close:hover {
+  color: #fff;
+}
+
+.shortcut-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.shortcut-table tr {
+  border-bottom: 1px solid #333;
+}
+
+.shortcut-table tr:last-child {
+  border-bottom: none;
+}
+
+.shortcut-keys {
+  padding: 6px 12px 6px 0;
+  color: #aac;
+  font-family: monospace;
+  font-size: 13px;
+  white-space: nowrap;
+  width: 1%;
+}
+
+.shortcut-desc {
+  padding: 6px 0;
+  color: #ccc;
+  font-size: 13px;
+}

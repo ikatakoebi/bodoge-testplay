@@ -1,0 +1,90 @@
+.sidebar {
+  width: 260px;
+  background: #1a1a2e;
+  border-left: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.sidebar-section {
+  padding: 12px;
+  border-bottom: 1px solid #2a2a3e;
+}
+
+.sidebar-title {
+  font-size: 12px;
+  font-weight: bold;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.sidebar-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.sidebar-btn {
+  padding: 3px 8px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #2a2a4a;
+  color: #aaa;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.sidebar-btn:hover {
+  background: #3a3a6a;
+  color: #ddd;
+}
+
+.sidebar-btn-danger {
+  color: #e88;
+  border-color: #633;
+}
+
+.sidebar-btn-danger:hover {
+  background: #3a1a1a;
+  color: #faa;
+}
+
+.area-count {
+  color: #666;
+  font-size: 12px;
+}
+
+.log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.log-empty {
+  color: #555;
+  font-size: 12px;
+  font-style: italic;
+}
+
+.log-entry {
+  display: flex;
+  gap: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.log-time {
+  color: #555;
+  white-space: nowrap;
+}
+
+.log-message {
+  color: #aaa;
+}

@@ -1,0 +1,166 @@
+.room-info {
+  position: relative;
+}
+
+.room-badge {
+  padding: 4px 10px;
+  border: 1px solid #3a8a3a;
+  border-radius: 4px;
+  background: #2a4a2a;
+  color: #8c8;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.room-badge:hover {
+  background: #3a5a3a;
+}
+
+.room-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: #1e1e2e;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 12px;
+  min-width: 220px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  z-index: 5000;
+}
+
+.room-dropdown-header {
+  font-size: 13px;
+  font-weight: bold;
+  color: #ccc;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #333;
+}
+
+.room-player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.room-player {
+  font-size: 12px;
+  color: #aaa;
+  padding: 4px 8px;
+  border-left: 3px solid #888;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 2px;
+}
+
+.room-field {
+  margin-bottom: 8px;
+}
+
+.room-field label {
+  display: block;
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.room-field input,
+.room-join-row input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #2a2a3e;
+  color: #ddd;
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.room-field input:focus,
+.room-join-row input:focus {
+  border-color: #668;
+}
+
+.room-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.room-join-row {
+  display: flex;
+  gap: 6px;
+}
+
+.room-join-row input {
+  flex: 1;
+  width: auto;
+  text-transform: uppercase;
+}
+
+.room-btn {
+  padding: 6px 12px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #2a2a4a;
+  color: #ddd;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.room-btn:hover {
+  background: #3a3a6a;
+}
+
+.room-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.room-btn-primary {
+  background: #2a4a6a;
+  border-color: #468;
+  color: #acf;
+}
+
+.room-btn-primary:hover {
+  background: #3a5a8a;
+}
+
+.room-btn-danger {
+  border-color: #644;
+  color: #e88;
+}
+
+.room-btn-danger:hover {
+  background: #4a2a2a;
+}
+
+.room-color-palette {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.room-color-swatch {
+  width: 24px;
+  height: 24px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 0.15s;
+}
+
+.room-color-swatch:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.room-color-swatch.active {
+  border-color: #fff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+}

@@ -1,0 +1,66 @@
+.area-overlay {
+  position: absolute;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 8px;
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+  box-sizing: border-box;
+}
+
+.area-public {
+  border-color: rgba(100, 200, 100, 0.5);
+  background: rgba(100, 200, 100, 0.05);
+}
+
+.area-owner {
+  border-color: rgba(100, 150, 255, 0.5);
+  background: rgba(100, 150, 255, 0.05);
+}
+
+.area-hidden {
+  border-color: rgba(200, 100, 100, 0.5);
+  background: rgba(200, 100, 100, 0.05);
+}
+
+.area-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: bold;
+}
+
+.area-visibility {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.area-resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.area-overlay:hover .area-resize-handle {
+  opacity: 1;
+}
+
+.area-resize-handle[data-corner="resize-nw"] { cursor: nw-resize; }
+.area-resize-handle[data-corner="resize-ne"] { cursor: ne-resize; }
+.area-resize-handle[data-corner="resize-sw"] { cursor: sw-resize; }
+.area-resize-handle[data-corner="resize-se"] { cursor: se-resize; }
+
+.area-overlay.area-locked {
+  cursor: default;
+}
+
+.area-overlay.area-locked .area-resize-handle {
+  display: none;
+}

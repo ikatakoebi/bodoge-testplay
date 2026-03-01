@@ -1,0 +1,70 @@
+.rules-panel {
+  padding: 0;
+}
+
+.rules-header {
+  display: flex;
+  gap: 4px;
+}
+
+.rules-content {
+  margin-top: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  font-size: 12px;
+  color: #bbb;
+  line-height: 1.5;
+}
+
+.rules-h1 {
+  font-size: 14px;
+  font-weight: bold;
+  color: #ddd;
+  margin: 8px 0 4px;
+}
+
+.rules-h2 {
+  font-size: 13px;
+  font-weight: bold;
+  color: #ccc;
+  margin: 6px 0 2px;
+}
+
+.rules-p {
+  margin: 2px 0;
+}
+
+.rules-li {
+  padding-left: 8px;
+  color: #aaa;
+}
+
+.rules-empty {
+  color: #555;
+  font-size: 12px;
+  font-style: italic;
+  margin-top: 4px;
+}
+
+.rules-editor {
+  margin-top: 8px;
+}
+
+.rules-textarea {
+  width: 100%;
+  background: #222;
+  color: #ddd;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 12px;
+  font-family: monospace;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.rules-editor-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}

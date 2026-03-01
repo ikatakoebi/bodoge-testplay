@@ -1,0 +1,303 @@
+/* 折りたたみ状態 */
+.te-collapsed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.te-collapsed-info {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  color: #888;
+}
+
+.te-collapsed-size {
+  color: #aaa;
+  font-weight: bold;
+}
+
+.te-collapsed-fields {
+  color: #777;
+}
+
+.te-expand-btn {
+  margin-left: auto;
+  padding: 4px 12px;
+  background: #2a3a5a;
+  border: 1px solid #4a6a9a;
+  border-radius: 4px;
+  color: #8ac;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.te-expand-btn:hover {
+  background: #3a4a6a;
+  color: #adf;
+}
+
+/* テンプレート選択 */
+.te-template-selector {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #333;
+  margin-bottom: 4px;
+}
+
+.te-template-select {
+  flex: 1;
+  padding: 3px 4px;
+  background: #1a1a2e;
+  border: 1px solid #4a6a9a;
+  border-radius: 4px;
+  color: #8ac;
+  font-size: 12px;
+  font-weight: bold;
+  min-width: 0;
+}
+
+.te-rename-row {
+  display: flex;
+  gap: 3px;
+  flex: 1;
+  align-items: center;
+}
+
+.te-rename-input {
+  flex: 1;
+  padding: 3px 6px;
+  background: #222;
+  border: 1px solid #4a6a9a;
+  border-radius: 4px;
+  color: #ddd;
+  font-size: 12px;
+  min-width: 0;
+}
+
+/* 展開状態 */
+.template-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.te-section-title {
+  font-size: 11px;
+  font-weight: bold;
+  color: #8ac;
+  margin-top: 8px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.te-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #aaa;
+}
+
+.te-row label {
+  min-width: 54px;
+  flex-shrink: 0;
+}
+
+.te-row select,
+.te-row input[type="text"] {
+  flex: 1;
+  padding: 2px 4px;
+  background: #222;
+  border: 1px solid #444;
+  border-radius: 3px;
+  color: #ddd;
+  font-size: 11px;
+  min-width: 0;
+}
+
+.te-row input[type="color"] {
+  width: 28px;
+  height: 22px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.te-row input[type="range"] {
+  flex: 1;
+  accent-color: #668;
+}
+
+.te-num {
+  width: 52px !important;
+  flex: 0 !important;
+  padding: 2px 4px;
+  background: #222;
+  border: 1px solid #444;
+  border-radius: 3px;
+  color: #ddd;
+  font-size: 11px;
+  text-align: center;
+}
+
+.te-x {
+  color: #666;
+  font-size: 11px;
+}
+
+/* レイアウトフィールド */
+.te-add-btn {
+  background: #2a4a2a;
+  border: 1px solid #3a6a3a;
+  border-radius: 3px;
+  color: #8c8;
+  font-size: 13px;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+}
+
+.te-add-btn:hover {
+  background: #3a6a3a;
+}
+
+.te-field-row {
+  background: #1a1a2e;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 5px 6px;
+}
+
+.te-field-header {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.te-field-name {
+  flex: 1;
+  padding: 2px 3px;
+  background: #222;
+  border: 1px solid #444;
+  border-radius: 3px;
+  color: #ddd;
+  font-size: 11px;
+  min-width: 0;
+}
+
+.te-field-pos {
+  width: 44px;
+  padding: 2px 2px;
+  background: #222;
+  border: 1px solid #444;
+  border-radius: 3px;
+  color: #ddd;
+  font-size: 10px;
+}
+
+.te-field-btn {
+  background: #2a2a3a;
+  border: 1px solid #444;
+  border-radius: 3px;
+  color: #aaa;
+  font-size: 11px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.te-field-btn:hover {
+  background: #3a3a5a;
+  color: #ddd;
+}
+
+.te-field-btn-del {
+  color: #e88;
+}
+
+.te-field-btn-del:hover {
+  background: #4a2a2a;
+}
+
+.te-field-options {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.te-opt {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: #888;
+}
+
+.te-opt-check {
+  cursor: pointer;
+}
+
+.te-opt-check input[type="checkbox"] {
+  width: 12px;
+  height: 12px;
+  accent-color: #668;
+  margin: 0;
+}
+
+.te-opt-check span {
+  font-weight: bold;
+  font-size: 11px;
+  color: #aaa;
+}
+
+.te-num-sm {
+  width: 36px;
+  padding: 1px 3px;
+  background: #222;
+  border: 1px solid #444;
+  border-radius: 3px;
+  color: #ddd;
+  font-size: 10px;
+  text-align: center;
+}
+
+.te-sel-sm {
+  padding: 1px 2px;
+  background: #222;
+  border: 1px solid #444;
+  border-radius: 3px;
+  color: #ddd;
+  font-size: 10px;
+}
+
+.te-color-sm {
+  width: 20px;
+  height: 18px;
+  border: 1px solid #444;
+  border-radius: 2px;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}

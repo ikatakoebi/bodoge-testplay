@@ -1,0 +1,4 @@
+id,name,min,max,default,step,per_player
+hp,HP,0,20,10,1,true
+gold,所持金,0,999,0,1,true
+round,ラウンド,1,99,1,1,false

@@ -1,0 +1,5 @@
+area_id,name,x,y,width,height,visibility,per_player,bg_color
+deck,山札,2,2,15,19,hidden,false,#1a1a2e40
+market,場,19,2,58,19,public,false,#2d5a3d40
+discard,捨て札,79,2,15,19,public,false,#4a1a1a40
+p_hand,手札,2,23,75,19,owner,true,#3a2a1a20

@@ -1,0 +1,98 @@
+.field-viewport {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #2d5a3d;
+  min-height: 0;
+  cursor: default;
+}
+
+.field-viewport.panning {
+  cursor: grab;
+}
+
+.field-viewport.panning:active {
+  cursor: grabbing;
+}
+
+.field-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20000px;
+  height: 20000px;
+}
+
+.field-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: var(--cell-size) var(--cell-size);
+}
+
+.field-viewport.space-pan {
+  cursor: grab;
+}
+
+.field-viewport.space-pan:active {
+  cursor: grabbing;
+}
+
+.field-viewport.area-draw-mode {
+  cursor: crosshair;
+}
+
+.area-drawing-preview {
+  position: absolute;
+  border: 2px dashed rgba(100, 200, 255, 0.8);
+  background: rgba(100, 200, 255, 0.1);
+  pointer-events: none;
+}
+
+.selection-preview {
+  position: absolute;
+  border: 2px dashed rgba(100, 180, 255, 0.9);
+  background: rgba(100, 180, 255, 0.15);
+  pointer-events: none;
+}
+
+.snap-guide {
+  position: absolute;
+  pointer-events: none;
+  z-index: 99999;
+}
+
+.snap-guide-v {
+  top: 0;
+  width: 1px;
+  height: 20000px;
+  background: rgba(255, 100, 100, 0.6);
+}
+
+.snap-guide-h {
+  left: 0;
+  width: 20000px;
+  height: 1px;
+  background: rgba(255, 100, 100, 0.6);
+}
+
+.drop-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(50, 120, 200, 0.2);
+  border: 3px dashed rgba(100, 180, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 99999;
+}
+
+.drop-overlay-text {
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+}

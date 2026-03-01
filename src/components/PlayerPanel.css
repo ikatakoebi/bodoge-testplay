@@ -1,0 +1,95 @@
+.player-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.player-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid transparent;
+  transition: background 0.15s;
+}
+
+.player-row.active {
+  background: rgba(100, 180, 255, 0.1);
+  border-color: rgba(100, 180, 255, 0.3);
+}
+
+.player-color {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  cursor: pointer;
+  background: none;
+  flex-shrink: 0;
+}
+
+.player-color::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.player-color::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+.player-name {
+  flex: 1;
+  font-size: 12px;
+  color: #ccc;
+  cursor: default;
+  user-select: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-name-input {
+  flex: 1;
+  font-size: 12px;
+  padding: 1px 4px;
+  border: 1px solid rgba(100, 180, 255, 0.5);
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.3);
+  color: #eee;
+  outline: none;
+  min-width: 0;
+}
+
+.player-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: rgba(100, 180, 255, 0.25);
+  color: #8cf;
+  flex-shrink: 0;
+}
+
+.player-badge-other {
+  background: rgba(255, 255, 255, 0.08);
+  color: #888;
+}
+
+.player-switch-btn {
+  font-size: 10px;
+  padding: 1px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #aaa;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.player-switch-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #eee;
+}

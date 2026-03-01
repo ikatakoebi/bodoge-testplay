@@ -1,0 +1,53 @@
+.dice-float {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  background: rgba(20, 20, 40, 0.92);
+  border: 1px solid #556;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  z-index: 9000;
+  animation: diceFloatIn 0.3s ease-out;
+  pointer-events: none;
+}
+
+@keyframes diceFloatIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+.dice-float-dice {
+  display: flex;
+  gap: 8px;
+}
+
+.dice-float-die {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: #fff;
+  color: #222;
+  border-radius: 8px;
+  font-size: 22px;
+  font-weight: bold;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dice-float-total {
+  font-size: 28px;
+  font-weight: bold;
+  color: #ffd740;
+}

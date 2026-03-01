@@ -1,0 +1,13 @@
+template,size,size_width,size_height,back_color,back_text,back_image,border_color,border_radius,border_color_field,field,position,fontSize,bold,italic,shape,bgColor,height
+default,standard,,,#2a2a5a,★,,#666,8,color,name,top,13,true,,,,
+default,,,,,,,,,,cost,top-right,12,,,circle,#f0c040,
+default,,,,,,,,,,image,center,,,,,,60
+default,,,,,,,,,,text,bottom,10,,,,,
+spell,standard,,,#1a1a3e,♦,,#444,10,color,name,top,14,true,,,,
+spell,,,,,,,,,,cost,top-right,13,true,,circle,#e74c3c,
+spell,,,,,,,,,,image,center,,,,,,65
+spell,,,,,,,,,,text,bottom,9,,,,,
+unit,standard,,,#1e3a1e,⚔,,#555,8,color,name,top,13,true,,,,
+unit,,,,,,,,,,cost,top-left,12,true,,circle,#3498db,
+unit,,,,,,,,,,image,center,,,,,,55
+unit,,,,,,,,,,text,bottom,10,,,,,
