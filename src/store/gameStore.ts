@@ -149,6 +149,10 @@ interface GameState {
   // ルール
   setRulesText: (text: string) => void;
 
+  // セットアップテキスト
+  setupText: string;
+  setSetupText: (text: string) => void;
+
   // 所有権譲渡
   transferOwnership: (instanceId: string, newOwnerId: string) => void;
 
@@ -817,6 +821,10 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   // === ルール ===
   setRulesText: (text) => set({ rulesText: text }),
+
+  // === セットアップテキスト ===
+  setupText: '',
+  setSetupText: (text) => set({ setupText: text }),
 
   // === 所有権譲渡 ===
   transferOwnership: (instanceId, newOwnerId) =>

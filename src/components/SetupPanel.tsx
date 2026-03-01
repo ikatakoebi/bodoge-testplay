@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import { useGameStore } from '../store/gameStore';
 import { useUIStore } from '../store/uiStore';
@@ -42,11 +42,19 @@ export function SetupPanel() {
   const [localPlayerCount, setLocalPlayerCount] = useState(2);
   const playerCount = isOnline && roomPlayerCount > 0 ? roomPlayerCount : localPlayerCount;
 
+  const storeSetupText = useGameStore((s) => s.setupText);
+  const setStoreSetupText = useGameStore((s) => s.setSetupText);
+
   const [format, setFormat] = useState<SetupFormat>('yaml');
-  const [setupText, setSetupText] = useState(stringifyYaml(DEFAULT_SETUP_ACTIONS));
+  const [setupText, setSetupText] = useState(storeSetupText || stringifyYaml(DEFAULT_SETUP_ACTIONS));
   const [isEditing, setIsEditing] = useState(false);
 
   const addToast = useUIStore((s) => s.addToast);
+
+  // スプシ等から外部でsetupTextが更新されたら同期
+  useEffect(() => {
+    if (storeSetupText) setSetupText(storeSetupText);
+  }, [storeSetupText]);
 
   const handleSetupFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -56,12 +64,13 @@ export function SetupPanel() {
       const text = ev.target?.result as string;
       if (text) {
         setSetupText(text);
+        setStoreSetupText(text);
         addToast('セットアップを読み込みました', 'success');
       }
     };
     reader.readAsText(file);
     e.target.value = '';
-  }, [addToast]);
+  }, [addToast, setStoreSetupText]);
 
   const toggleFormat = useCallback(() => {
     const parsed = parseSetupText(setupText);

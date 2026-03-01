@@ -152,7 +152,7 @@ app.get('/api/sheets', async (req, res) => {
     return;
   }
 
-  const sheetNames = ['cards', 'areas', 'counters', 'templates'];
+  const sheetNames = ['cards', 'areas', 'counters', 'templates', 'setup'];
   const base = `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&sheet=`;
 
   try {

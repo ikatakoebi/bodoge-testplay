@@ -8,6 +8,8 @@ import { parseCounterCsv } from '../utils/counterCsv';
 import { parseCsvToAreas, areasToCSV } from '../utils/areaCsv';
 import { parseCsvToTemplates } from '../utils/templateCsv';
 import { parseCsvToCards } from '../utils/csv';
+import { parseSetupCsv } from '../utils/setupCsv';
+import { stringify as stringifyYaml } from 'yaml';
 import './Header.css';
 
 function extractSheetId(url: string): string | null {
@@ -72,6 +74,7 @@ export function Header() {
   const setCardTemplate = useGameStore((s) => s.setCardTemplate);
   const setCardTemplates = useGameStore((s) => s.setCardTemplates);
   const setCardDefinitions = useGameStore((s) => s.setCardDefinitions);
+  const setSetupText = useGameStore((s) => s.setSetupText);
 
   const handleSheetsImport = useCallback(async () => {
     const id = extractSheetId(sheetsUrl);
@@ -115,6 +118,14 @@ export function Header() {
         }
       }
 
+      if (data.setup) {
+        const actions = parseSetupCsv(data.setup);
+        if (actions.length > 0) {
+          setSetupText(stringifyYaml(actions));
+          loaded.push(`セットアップ${actions.length}件`);
+        }
+      }
+
       if (loaded.length === 0) {
         useUIStore.getState().addToast('データを取得できませんでした。シートを「リンクを知っている全員が閲覧可」に設定してください', 'error');
       } else {
@@ -126,7 +137,7 @@ export function Header() {
       useUIStore.getState().addToast('サーバーへの接続に失敗しました', 'error');
     }
     setSheetsLoading(false);
-  }, [sheetsUrl, setCardDefinitions, setAreas, setCounterDefs, setCardTemplates, addCounter, addLog]);
+  }, [sheetsUrl, setCardDefinitions, setAreas, setCounterDefs, setCardTemplates, setSetupText, addCounter, addLog]);
 
   const handleGameYaml = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
