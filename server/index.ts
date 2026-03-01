@@ -186,7 +186,7 @@ app.get('/api/sheets', async (req, res) => {
 // 本番ビルドの静的ファイル配信（dist/が存在するとき）
 if (existsSync(distPath)) {
   app.use(express.static(distPath));
-  app.get('*', (_req, res) => {
+  app.get('/{*path}', (_req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
   });
 }
