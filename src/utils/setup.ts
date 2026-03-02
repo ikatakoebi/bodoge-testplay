@@ -2,6 +2,7 @@ import type { CardDefinition, CardInstance, CardTemplate, CardStack, Area, Count
 import type { CounterDef } from './counterCsv';
 import { shuffle } from './shuffle';
 import { getCardSize, DEFAULT_TEMPLATE } from './cardTemplate';
+import { computePerPlayerBaseYs } from './areaCsv';
 import { useUIStore } from '../store/uiStore';
 
 export interface SetupAction {
@@ -193,6 +194,9 @@ export function executeSetup(
     logs.push(`残り${pool.length}枚をフィールドに配置`);
   }
 
+  // perPlayerエリアの重なり防止: プレイヤー数に応じてベースYを調整
+  const perPlayerBaseYs = computePerPlayerBaseYs(areas, config.playerCount);
+
   // CardInstanceに変換
   const instances: Record<string, CardInstance> = {};
   const stacks: Record<string, CardStack> = {};
@@ -204,7 +208,8 @@ export function executeSetup(
     const actualAreaId = playerMatch ? playerMatch[1] : areaKey;
     const playerIndex = playerMatch ? Number(playerMatch[2]) : -1;
 
-    const area = areaMap.get(actualAreaId);
+    // プレイヤー固有エリア（p_witch_p0 等）が明示定義されていればそれを優先
+    const area = areaMap.get(areaKey) || areaMap.get(actualAreaId);
 
     // hiddenエリアのカードはスタック（山札）にまとめる
     if (area && area.visibility === 'hidden' && cards.length > 1) {
@@ -223,6 +228,7 @@ export function executeSetup(
           visibility: 'hidden',
           ownerId: null,
           stackId,
+          homeStackId: stackId,
           locked: false,
           rotation: 0,
         };
@@ -245,7 +251,13 @@ export function executeSetup(
 
     if (area) {
       baseX = area.x * cellSize;
-      baseY = area.y * cellSize + (playerIndex >= 0 ? playerIndex * area.height * cellSize : 0);
+      // プレイヤー固有エリア（p_witch_p0 等）が直接定義されている場合はそのY座標をそのまま使う
+      // 汎用エリア（per_player: true）のみ自動オフセットを適用
+      const isExplicit = areaMap.has(areaKey);
+      const areaBaseY = (!isExplicit && playerIndex >= 0 && area.perPlayer)
+        ? (perPlayerBaseYs.get(area.areaId) ?? area.y)
+        : area.y;
+      baseY = areaBaseY * cellSize + (!isExplicit && playerIndex >= 0 ? playerIndex * area.height * cellSize : 0);
       maxCols = Math.max(1, Math.floor((area.width * cellSize) / colStep));
     } else {
       // エリアがない場合、フィールド上に順番に配置
@@ -268,6 +280,7 @@ export function executeSetup(
         visibility: hasOwner ? 'owner' : (isFaceUp ? 'public' : 'hidden'),
         ownerId: card.ownerId || null,
         stackId: null,
+        homeStackId: null,
         locked: false,
         rotation: 0,
       };

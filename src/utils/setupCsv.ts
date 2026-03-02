@@ -27,8 +27,8 @@ export function parseSetupCsv(csvText: string): SetupAction[] {
     const countRaw = row['count']?.trim();
     if (countRaw) entry.count = isNaN(Number(countRaw)) ? 1 : Number(countRaw);
 
-    if (row['perPlayer']?.trim() === 'true') entry.perPlayer = true;
-    if (row['faceUp']?.trim() === 'true') entry.faceUp = true;
+    if (row['perPlayer']?.trim().toLowerCase() === 'true') entry.perPlayer = true;
+    if (row['faceUp']?.trim().toLowerCase() === 'true') entry.faceUp = true;
 
     return [entry];
   });

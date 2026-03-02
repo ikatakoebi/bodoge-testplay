@@ -1,12 +1,24 @@
 area_id,name,x,y,width,height,visibility,per_player,bg_color
-relic_supply,聖遺物売り場,-35,-60,72,22,public,false,#1abc9c40
-relic_deck,聖遺物デッキ,38,-60,15,22,hidden,false,#1abc9c20
-achievement,実績エリア,-35,-37,72,22,public,false,#3498db40
-saint_deck,聖者デッキ,-35,-14,30,22,hidden,false,#2ecc7120
-saint_supply,聖者売り場,-3,-14,60,22,public,false,#9b59b640
-magic_supply,魔導具売り場,-35,9,72,116,public,false,#9b59b620
-field,フィールドアクション,40,9,72,95,public,false,#7f8c8d20
-p_witch,魔女/使い魔,-110,-60,70,22,public,true,#e74c3c20
-p_tools,魔導具所持,-110,-16,70,22,public,true,#9b59b630
-p_saints,聖者所持,-110,28,70,22,public,true,#2ecc7130
-p_relics,聖遺物所持,-110,72,70,22,public,true,#1abc9c30
+achievement,実績エリア,-35,-60,75,22,public,false,#3498db40
+relic_deck,聖遺物デッキ,42,-60,15,22,hidden,false,#1abc9c20
+magic_deck,魔導具デッキ,-35,-38,15,22,hidden,false,#9b59b620
+magic_supply,魔導具展示,-18,-38,30,22,public,false,#9b59b640
+field,フィールドアクション,15,-38,48,46,public,false,#7f8c8d20
+saint_deck,聖者デッキ,-35,-16,15,22,hidden,false,#2ecc7120
+saint_supply,聖者展示,-18,-16,30,22,public,false,#9b59b640
+p_witch_p0,魔女/使い魔 (P1),-110,-60,70,22,public,false,#e74c3c20
+p_tools_p0,魔導具所持 (P1),-110,-38,70,22,owner,false,#9b59b630
+p_saints_p0,聖者所持 (P1),-110,-16,70,22,owner,false,#2ecc7130
+p_relics_p0,聖遺物所持 (P1),-110,6,70,22,owner,false,#1abc9c30
+p_witch_p1,魔女/使い魔 (P2),68,-60,70,22,public,false,#3498db20
+p_tools_p1,魔導具所持 (P2),68,-38,70,22,owner,false,#9b59b630
+p_saints_p1,聖者所持 (P2),68,-16,70,22,owner,false,#2ecc7130
+p_relics_p1,聖遺物所持 (P2),68,6,70,22,owner,false,#1abc9c30
+p_witch_p2,魔女/使い魔 (P3),-35,-108,70,22,public,false,#2ecc7120
+p_tools_p2,魔導具所持 (P3),42,-108,70,22,owner,false,#9b59b630
+p_saints_p2,聖者所持 (P3),-35,-86,70,22,owner,false,#2ecc7130
+p_relics_p2,聖遺物所持 (P3),42,-86,70,22,owner,false,#1abc9c30
+p_witch_p3,魔女/使い魔 (P4),-35,13,70,22,public,false,#f39c1220
+p_tools_p3,魔導具所持 (P4),42,13,70,22,owner,false,#9b59b630
+p_saints_p3,聖者所持 (P4),-35,35,70,22,owner,false,#2ecc7130
+p_relics_p3,聖遺物所持 (P4),42,35,70,22,owner,false,#1abc9c30

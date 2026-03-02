@@ -10,6 +10,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distPath = path.resolve(__dirname, '../dist');
 
 const app = express();
+app.use((_req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+});
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: { origin: '*', methods: ['GET', 'POST'] },
@@ -28,6 +34,7 @@ interface RoomState {
   players: Map<string, PlayerEntry>; // socketId → PlayerEntry
   nextPlayerIndex: number; // 次に割り当てるプレイヤー番号
   gameState: unknown | null;
+  emptyTimer: ReturnType<typeof setTimeout> | null; // 空室削除タイマー
 }
 
 const rooms = new Map<string, RoomState>();
@@ -56,6 +63,7 @@ io.on('connection', (socket) => {
       players: new Map([[socket.id, { name: data.playerName, color: data.playerColor, playerId }]]),
       nextPlayerIndex: 1,
       gameState: null,
+      emptyTimer: null,
     };
     rooms.set(roomId, room);
     socket.join(roomId);
@@ -72,6 +80,11 @@ io.on('connection', (socket) => {
     if (!room) {
       callback({ ok: false, error: 'ルームが見つかりません' });
       return;
+    }
+    // 空室タイマーをキャンセル（リロード後の再参加）
+    if (room.emptyTimer) {
+      clearTimeout(room.emptyTimer);
+      room.emptyTimer = null;
     }
     const playerId = assignPlayerId(room);
     room.players.set(socket.id, { name: data.playerName, color: data.playerColor, playerId });
@@ -112,8 +125,16 @@ io.on('connection', (socket) => {
       if (room) {
         room.players.delete(socket.id);
         if (room.players.size === 0) {
-          rooms.delete(currentRoom);
-          console.log(`[room:delete] ${currentRoom} (empty)`);
+          // リロード対応: 15秒間ルームを保持してから削除
+          const roomId = currentRoom;
+          room.emptyTimer = setTimeout(() => {
+            const r = rooms.get(roomId);
+            if (r && r.players.size === 0) {
+              rooms.delete(roomId);
+              console.log(`[room:delete] ${roomId} (empty, grace period expired)`);
+            }
+          }, 15000);
+          console.log(`[room:empty] ${currentRoom} (waiting 15s for reconnect)`);
         } else {
           // ホストが抜けたら次の人をホストに
           if (room.hostId === socket.id) {
@@ -153,14 +174,15 @@ app.get('/api/sheets', async (req, res) => {
   }
 
   const sheetNames = ['cards', 'areas', 'counters', 'templates', 'setup'];
-  const base = `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&sheet=`;
 
   try {
+    // gviz/tq APIはsheet=NAMEが正しく動作する（公開スプレッドシートのみ）
     const results: Record<string, string | null> = {};
     await Promise.all(
       sheetNames.map(async (sheet) => {
         try {
-          const r = await fetch(base + encodeURIComponent(sheet), {
+          const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheet)}&headers=1`;
+          const r = await fetch(url, {
             headers: { 'User-Agent': 'BodogeTestPlay/1.0' },
             redirect: 'follow',
           });

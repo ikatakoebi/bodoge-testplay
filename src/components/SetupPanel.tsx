@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import { useGameStore } from '../store/gameStore';
 import { useUIStore } from '../store/uiStore';
@@ -47,14 +47,16 @@ export function SetupPanel() {
 
   const [format, setFormat] = useState<SetupFormat>('yaml');
   const [setupText, setSetupText] = useState(storeSetupText || stringifyYaml(DEFAULT_SETUP_ACTIONS));
+  const [prevStoreText, setPrevStoreText] = useState(storeSetupText);
   const [isEditing, setIsEditing] = useState(false);
 
   const addToast = useUIStore((s) => s.addToast);
 
-  // スプシ等から外部でsetupTextが更新されたら同期
-  useEffect(() => {
-    if (storeSetupText) setSetupText(storeSetupText);
-  }, [storeSetupText]);
+  // スプシ等から外部でsetupTextが更新されたら同期（レンダリング中に更新してuseEffectを避ける）
+  if (storeSetupText && storeSetupText !== prevStoreText) {
+    setPrevStoreText(storeSetupText);
+    setSetupText(storeSetupText);
+  }
 
   const handleSetupFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

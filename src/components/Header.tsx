@@ -10,6 +10,7 @@ import { parseCsvToTemplates } from '../utils/templateCsv';
 import { parseCsvToCards } from '../utils/csv';
 import { parseSetupCsv } from '../utils/setupCsv';
 import { stringify as stringifyYaml } from 'yaml';
+import { clearSoloState } from '../store/syncBridge';
 import './Header.css';
 
 function extractSheetId(url: string): string | null {
@@ -18,7 +19,7 @@ function extractSheetId(url: string): string | null {
 }
 
 export function Header() {
-  const [sheetsUrl, setSheetsUrl] = useState('');
+  const [sheetsUrl, setSheetsUrl] = useState(() => localStorage.getItem('sheetsUrl') || '');
   const [sheetsLoading, setSheetsLoading] = useState(false);
   const [sheetsOpen, setSheetsOpen] = useState(false);
 
@@ -245,7 +246,7 @@ export function Header() {
                 type="text"
                 placeholder="Google SheetsのURLを貼り付け"
                 value={sheetsUrl}
-                onChange={(e) => setSheetsUrl(e.target.value)}
+                onChange={(e) => { setSheetsUrl(e.target.value); localStorage.setItem('sheetsUrl', e.target.value); }}
                 onKeyDown={(e) => e.key === 'Enter' && handleSheetsImport()}
               />
               <button
@@ -292,14 +293,14 @@ export function Header() {
             エリアコピー
           </button>
         )}
-        <span className="zoom-indicator">{Math.round(zoom * 100)}%</span>
-        {zoom !== 1 && (
-          <button className="header-btn" onClick={resetView}>
-            Reset
-          </button>
-        )}
-        <button className="header-btn header-btn-danger" onClick={clearField}>
-          クリア
+        <span
+          className="zoom-indicator"
+          onClick={resetView}
+          title="クリックで表示をリセット"
+          style={{ cursor: 'pointer' }}
+        >{Math.round(zoom * 100)}%</span>
+        <button className="header-btn header-btn-danger" onClick={() => { clearField(); clearSoloState(); }}>
+          全消去
         </button>
         <RoomPanel />
       </div>

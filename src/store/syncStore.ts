@@ -1,6 +1,25 @@
 import { create } from 'zustand';
 import { io, Socket } from 'socket.io-client';
 
+const SESSION_KEY = 'bodogeSession';
+
+function saveSession(roomId: string, playerName: string, playerColor: string) {
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify({ roomId, playerName, playerColor }));
+}
+
+function clearSession() {
+  sessionStorage.removeItem(SESSION_KEY);
+}
+
+export function loadSession(): { roomId: string; playerName: string; playerColor: string } | null {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 interface PlayerInfo {
   id: string;
   name: string;
@@ -36,9 +55,10 @@ interface SyncState {
   connect: () => void;
   disconnect: () => void;
   createRoom: () => Promise<{ roomId: string; playerId: string } | null>;
-  joinRoom: (roomId: string) => Promise<{ playerId: string } | null>;
+  joinRoom: (roomId: string, silent?: boolean) => Promise<{ playerId: string } | null>;
   sendAction: (type: string, payload: unknown) => void;
   sendFullState: (state: unknown) => void;
+  autoRejoin: () => Promise<{ playerId: string } | null>;
 }
 
 const PLAYER_COLORS = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6'];
@@ -95,6 +115,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     if (socket) {
       socket.disconnect();
       set({ socket: null, connected: false, roomId: null, isHost: false, myPlayerId: null, players: [] });
+      clearSession();
     }
   },
 
@@ -105,6 +126,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       socket.emit('room:create', { playerName, playerColor }, (res: { ok: boolean; roomId?: string; isHost?: boolean; playerId?: string }) => {
         if (res.ok && res.roomId && res.playerId) {
           set({ roomId: res.roomId, isHost: res.isHost ?? true, myPlayerId: res.playerId });
+          saveSession(res.roomId, playerName, playerColor);
           resolve({ roomId: res.roomId, playerId: res.playerId });
         } else {
           resolve(null);
@@ -113,16 +135,18 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     });
   },
 
-  joinRoom: (roomId) => {
+  joinRoom: (roomId, silent = false) => {
     return new Promise((resolve) => {
       const { socket, playerName, playerColor } = get();
       if (!socket) { resolve(null); return; }
       socket.emit('room:join', { roomId, playerName, playerColor }, (res: { ok: boolean; error?: string; playerId?: string }) => {
         if (res.ok && res.playerId) {
           set({ roomId, isHost: false, myPlayerId: res.playerId });
+          saveSession(roomId, playerName, playerColor);
           resolve({ playerId: res.playerId });
         } else {
-          alert(res.error || '参加に失敗しました');
+          clearSession();
+          if (!silent) alert(res.error || '参加に失敗しました');
           resolve(null);
         }
       });
@@ -139,5 +163,20 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     const { socket, roomId } = get();
     if (!socket || !roomId) return;
     socket.emit('sync:fullState', state);
+  },
+
+  autoRejoin: async () => {
+    const session = loadSession();
+    if (!session) return null;
+    const { roomId, playerName, playerColor } = session;
+    get().setPlayerInfo(playerName, playerColor);
+    get().connect();
+    // ソケット接続を待つ
+    await new Promise((r) => setTimeout(r, 600));
+    const result = await get().joinRoom(roomId, true); // silent=true でalertなし
+    if (!result) {
+      clearSession();
+    }
+    return result;
   },
 }));

@@ -30,9 +30,9 @@ export function AreaOverlay({ area }: Props) {
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (e.button === 2) return;
+    if (area.locked !== false) return;
     e.preventDefault();
     e.stopPropagation();
-    if (area.locked !== false) return;
 
     const target = e.target as HTMLElement;
     const handle = target.closest('.area-resize-handle');

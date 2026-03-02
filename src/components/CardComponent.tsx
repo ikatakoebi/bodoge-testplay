@@ -172,10 +172,11 @@ export function CardComponent({ instance, definition, template, onDragEnd }: Pro
     instance.visibility === 'public' ||
     (instance.visibility === 'owner' && instance.ownerId === currentPlayerId)
   );
+  const isOwnerOnly = isFaceUp && instance.visibility === 'owner';
 
   return (
     <div
-      className={`card-component ${isFaceUp ? 'face-up' : 'face-down'} ${instance.locked ? 'locked' : ''} ${isSelected ? 'selected' : ''}`}
+      className={`card-component ${isFaceUp ? 'face-up' : 'face-down'} ${instance.locked ? 'locked' : ''} ${isSelected ? 'selected' : ''} ${isOwnerOnly ? 'owner-only' : ''}`}
       style={{
         left: instance.x + FIELD_OFFSET,
         top: instance.y + FIELD_OFFSET,
@@ -192,10 +193,15 @@ export function CardComponent({ instance, definition, template, onDragEnd }: Pro
       onContextMenu={handleContextMenu}
     >
       {isFaceUp ? (
-        <div className="card-front">
+        <div className="card-front" style={{ backgroundColor: definition.color as string || '#fff' }}>
           {template.layout.map((field, i) => (
             <CardField key={i} field={field} definition={definition} />
           ))}
+          {/* カード名に対応するイラストが存在すれば表示 */}
+          {!template.layout.some((f) => f.field === 'illustration') && (
+            <CardAutoIllust name={String(definition.name || '')} />
+          )}
+          {isOwnerOnly && <span className="card-owner-badge">自</span>}
         </div>
       ) : (
         <div className="card-back" style={{ backgroundColor: template.back.bgColor }}>
@@ -207,6 +213,20 @@ export function CardComponent({ instance, definition, template, onDragEnd }: Pro
         </div>
       )}
     </div>
+  );
+}
+
+function CardAutoIllust({ name }: { name: string }) {
+  if (!name) return null;
+  const src = `/card-images/${encodeURIComponent(name)}.png`;
+  return (
+    <img
+      src={src}
+      alt=""
+      draggable={false}
+      className="card-auto-illust"
+      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+    />
   );
 }
 
@@ -223,13 +243,18 @@ function CardField({ field, definition }: { field: CardTemplateField; definition
   const strVal = String(value);
   const isImg = isImageUrl(strVal);
 
+  const fontSize = field.position === 'bottom'
+    ? Math.max(field.fontSize ?? 13, 13)
+    : (field.fontSize ?? 12);
+
   return (
     <div
       className={`card-field card-field-${field.position}`}
       style={{
-        fontSize: field.fontSize || 12,
+        fontSize,
         fontWeight: field.bold ? 'bold' : 'normal',
         fontStyle: field.italic ? 'italic' : 'normal',
+        color: field.textColor || undefined,
         ...(isImg && field.height ? { height: field.height, minHeight: 0 } : {}),
       }}
     >

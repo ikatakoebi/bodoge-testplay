@@ -18,7 +18,8 @@ export interface CardInstance {
   face: CardFace;           // 表/裏
   visibility: CardVisibility; // 誰に見えるか
   ownerId: string | null;   // 所有者（めくった人）
-  stackId: string | null;   // 所属する山札のID（null=単体）
+  stackId: string | null;     // 現在いる山札のID（null=フィールド上）
+  homeStackId: string | null; // 所属元の山札のID（引かれても保持）
   locked: boolean;           // 位置ロック
   rotation: number;          // 回転角度（0, 90, 180, 270）
 }
@@ -120,6 +121,7 @@ export interface CardTemplateField {
   shape?: 'circle' | 'square';
   bgColor?: string;
   height?: string;
+  textColor?: string;
 }
 
 export interface CardTemplate {

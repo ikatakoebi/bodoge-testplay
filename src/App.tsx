@@ -9,8 +9,9 @@ import { ToastContainer } from './components/Toast';
 import { ModalDialog } from './components/ModalDialog';
 import { useGameStore } from './store/gameStore';
 import { useUIStore } from './store/uiStore';
+import { useSyncStore } from './store/syncStore';
 import { useSync } from './hooks/useSync';
-import { initSyncBridge } from './store/syncBridge';
+import { initSyncBridge, restoreSoloState } from './store/syncBridge';
 import './App.css';
 
 // 同期ブリッジ初期化（1回のみ）
@@ -18,10 +19,29 @@ initSyncBridge();
 
 function App() {
   useSync();
+
+  // リロード後の状態復元
+  useEffect(() => {
+    const { autoRejoin } = useSyncStore.getState();
+    autoRejoin().then((result) => {
+      if (result) {
+        useGameStore.getState().setCurrentPlayer(result.playerId);
+        useUIStore.getState().addToast('ルームに再接続しました', 'success');
+      } else {
+        // オンラインなし → ソロ保存状態を復元
+        const restored = restoreSoloState();
+        if (restored) {
+          useUIStore.getState().addToast('前回の状態を復元しました', 'info');
+        }
+      }
+    });
+  }, []);
+
   const undo = useGameStore((s) => s.undo);
   const redo = useGameStore((s) => s.redo);
   const rotateCards = useGameStore((s) => s.rotateCards);
   const removeCards = useGameStore((s) => s.removeCards);
+  const flipCards = useGameStore((s) => s.flipCards);
   const saveSnapshot = useGameStore((s) => s.saveSnapshot);
   const addLog = useGameStore((s) => s.addLog);
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -71,6 +91,15 @@ function App() {
           return;
         }
 
+        // O: 選択カードをオープン（全員に見える）
+        if (key === 'o') {
+          e.preventDefault();
+          saveSnapshot();
+          flipCards(selectedCardIds, 'public', null);
+          addLog(`${selectedCardIds.length}枚のカードをオープンにした`);
+          return;
+        }
+
         // Delete/Backspace で選択カード削除
         if (key === 'delete' || key === 'backspace') {
           e.preventDefault();
@@ -84,7 +113,7 @@ function App() {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [undo, redo, rotateCards, removeCards, saveSnapshot, addLog]);
+  }, [undo, redo, rotateCards, removeCards, flipCards, saveSnapshot, addLog]);
 
   return (
     <div className="app">

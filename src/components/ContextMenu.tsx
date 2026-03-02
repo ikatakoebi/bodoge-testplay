@@ -45,8 +45,12 @@ export function ContextMenu() {
   const toggleLockToken = useGameStore((s) => s.toggleLockToken);
   const duplicateToken = useGameStore((s) => s.duplicateToken);
   const transferOwnership = useGameStore((s) => s.transferOwnership);
+  const createStack = useGameStore((s) => s.createStack);
+  const addToStack = useGameStore((s) => s.addToStack);
+  const collectToStack = useGameStore((s) => s.collectToStack);
   const currentPlayerId = useGameStore((s) => s.currentPlayerId);
   const players = useGameStore((s) => s.players);
+  const setSelectedCards = useUIStore((s) => s.setSelectedCards);
 
   const cardInstances = useGameStore((s) => s.cardInstances);
   const cardTemplates = useGameStore((s) => s.cardTemplates);
@@ -130,6 +134,14 @@ export function ContextMenu() {
     <div className="context-menu" style={{ left: x, top: y }} onClick={(e) => e.stopPropagation()}>
       {isMultiSelection && (
         <>
+          <button className="context-menu-item" onClick={() => handleAction(() => {
+            createStack(selectedCardIds, fieldX, fieldY);
+            setSelectedCards([]);
+            addLog(`${selectedCardIds.length}枚で山札を作った`);
+          })}>
+            山札を作る
+          </button>
+          <div className="context-menu-separator" />
           <button className="context-menu-item" onClick={() => handleAction(() => {
             flipCards(selectedCardIds, 'owner', currentPlayerId);
             addLog(`${selectedCardIds.length}枚のカードをめくった（自分だけ）`);
@@ -225,6 +237,26 @@ export function ContextMenu() {
               ))}
             </>
           )}
+          {Object.keys(cardStacks).length > 0 && (
+            <>
+              <div className="context-menu-separator" />
+              <button className="context-menu-item" onClick={() => handleAction(() => {
+                const c = cardInstances[targetId!];
+                // homeStackIdがあればそこに戻す、なければ最近の山
+                const homeStack = c.homeStackId ? cardStacks[c.homeStackId] : null;
+                const targetStack = homeStack ?? Object.values(cardStacks).reduce<typeof cardStacks[string] | null>((best, s) => {
+                  if (!best) return s;
+                  return Math.hypot(s.x - c.x, s.y - c.y) < Math.hypot(best.x - c.x, best.y - c.y) ? s : best;
+                }, null);
+                if (targetStack) {
+                  addToStack(targetStack.stackId, targetId!);
+                  addLog('カードを山札に戻した');
+                }
+              })}>
+                山札に戻す
+              </button>
+            </>
+          )}
           <div className="context-menu-separator" />
           <button className="context-menu-item" onClick={() => handleAction(() => {
             rotateCard(targetId, 90);
@@ -294,6 +326,13 @@ export function ContextMenu() {
             addLog('山札をオープンにして広げた');
           })}>
             オープンにして広げる
+          </button>
+          <div className="context-menu-separator" />
+          <button className="context-menu-item" onClick={() => handleAction(() => {
+            collectToStack(targetId!);
+            addLog('全てのカードを山札に集めた');
+          })}>
+            全部この山札に戻す
           </button>
         </>
       )}

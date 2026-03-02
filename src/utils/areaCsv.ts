@@ -1,6 +1,27 @@
 import Papa from 'papaparse';
 import type { Area } from '../types';
 
+/**
+ * perPlayer エリアのベースY座標(プレイヤー0のY)を計算する。
+ * エリアが縦に重ならないよう、上から順に必要なスペースを確保してずらす。
+ */
+export function computePerPlayerBaseYs(areas: Area[], numPlayers: number): Map<string, number> {
+  const ppAreas = areas
+    .filter((a) => a.perPlayer)
+    .sort((a, b) => a.y - b.y);
+
+  const result = new Map<string, number>();
+  let runningBottom = -Infinity;
+
+  for (const area of ppAreas) {
+    const startY = Math.max(area.y, runningBottom);
+    result.set(area.areaId, startY);
+    runningBottom = startY + numPlayers * area.height;
+  }
+
+  return result;
+}
+
 export function parseCsvToAreas(csvText: string): Area[] {
   const result = Papa.parse<Record<string, string>>(csvText, {
     header: true,

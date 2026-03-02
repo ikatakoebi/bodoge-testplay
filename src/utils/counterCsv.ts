@@ -27,7 +27,7 @@ export function parseCounterCsv(text: string): CounterDef[] {
       max: Number(row.max) || 999,
       default: Number(row.default) || 0,
       step: Number(row.step) || 1,
-      perPlayer: row.per_player === 'true',
+      perPlayer: row.per_player?.toLowerCase() === 'true',
     });
   }
   return results;

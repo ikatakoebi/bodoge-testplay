@@ -50,15 +50,42 @@ export function parseCsvToTemplates(csvText: string): Record<string, CardTemplat
     // フィールド行
     const fieldName = (row.field || '').trim();
     if (fieldName) {
+      // position: 明示指定があればそれを使う。なければ y+align から導出（スプレッドシート形式対応）
+      let position: CardTemplateField['position'];
+      const posVal = (row.position || '').trim();
+      if (posVal) {
+        position = posVal as CardTemplateField['position'];
+      } else {
+        const y = Number(row.y) || 0;
+        const align = (row.align || '').trim().toLowerCase();
+        if (y < 30) {
+          position = align === 'right' ? 'top-right' : align === 'left' ? 'top-left' : 'top';
+        } else if (y >= 35) {
+          position = align === 'right' ? 'bottom-right' : 'bottom';
+        } else {
+          position = 'center';
+        }
+      }
+
+      // fontSize: camelCase優先、なければ小文字fontsize（スプレッドシート形式）
+      const fontSize = row.fontSize ? Number(row.fontSize) : (row.fontsize ? Number(row.fontsize) : undefined);
+      // bold: 大文字TRUE対応
+      const boldStr = (row.bold || '').toLowerCase();
+      const bold = boldStr === 'true' || boldStr === '1' ? true : undefined;
+      const italic = (row.italic || '').toLowerCase() === 'true' || row.italic === '1' ? true : undefined;
+      // textColor: textColor列 or color列（スプレッドシート形式）
+      const textColor = row.textColor?.trim() || row.color?.trim() || undefined;
+
       const field: CardTemplateField = {
         field: fieldName,
-        position: (row.position || 'center').trim() as CardTemplateField['position'],
-        fontSize: row.fontSize ? Number(row.fontSize) : undefined,
-        bold: row.bold === 'true' || row.bold === '1' ? true : undefined,
-        italic: row.italic === 'true' || row.italic === '1' ? true : undefined,
+        position,
+        fontSize,
+        bold,
+        italic,
         shape: (row.shape || undefined) as CardTemplateField['shape'],
         bgColor: row.bgColor ? row.bgColor.trim() : undefined,
         height: row.height ? row.height.trim() : undefined,
+        textColor,
       };
       templates[tName].layout.push(field);
     }

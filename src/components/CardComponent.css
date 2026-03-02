@@ -37,6 +37,7 @@
   padding: 6px;
   box-sizing: border-box;
   position: relative;
+  color: rgba(255, 255, 255, 0.95);
 }
 
 /* 裏面 */
@@ -64,6 +65,7 @@
 .card-field {
   line-height: 1.3;
   word-break: break-word;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
 .card-field-top {
@@ -103,19 +105,46 @@
 }
 
 .card-field-bottom {
-  margin-top: auto;
-  font-size: 10px;
-  color: #333;
+  position: absolute;
+  /* イラストの下端(58%)からカード下端まで使うためtopを指定 */
+  top: 59%;
+  bottom: 4px;
+  left: 5px;
+  right: 5px;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  line-height: 1.45;
+  overflow: hidden;
 }
 
+/* イラスト上にオーバーレイ表示 */
 .card-field-bottom-left {
-  margin-top: auto;
-  text-align: left;
+  position: absolute;
+  bottom: 42%;
+  left: 4px;
+  z-index: 2;
 }
 
 .card-field-bottom-right {
-  margin-top: auto;
+  position: absolute;
+  bottom: 42%;
+  right: 4px;
   text-align: right;
+  z-index: 2;
+}
+
+/* 自動イラスト（カード名対応のpngが存在する場合に表示） */
+.card-auto-illust {
+  position: absolute;
+  top: 18%;
+  left: 0;
+  width: 100%;
+  height: 40%;
+  object-fit: cover;
+  pointer-events: none;
+  z-index: 1;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 /* 画像フィールド */
@@ -126,15 +155,42 @@
   pointer-events: none;
 }
 
+/* 自分のみ閲覧可能カードのインジケーター */
+.card-component.owner-only {
+  /* outlineは選択状態と競合するのでbox-shadowを使用 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 0 0 2px rgba(220, 220, 220, 0.55);
+}
+
+.card-component.owner-only:active {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35), inset 0 0 0 2px rgba(220, 220, 220, 0.55);
+}
+
+.card-owner-badge {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  background: rgba(80, 80, 80, 0.55);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 9px;
+  font-weight: bold;
+  padding: 1px 4px;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 10;
+  line-height: 1.5;
+  letter-spacing: 0.5px;
+}
+
 /* バッジ（コストなど） */
 .card-field-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 2em;
+  height: 2em;
   border-radius: 50%;
   font-weight: bold;
-  font-size: 12px;
-  color: #333;
+  font-size: inherit;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }

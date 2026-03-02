@@ -11,6 +11,7 @@ import { TokenComponent } from './TokenComponent';
 import { Minimap } from './Minimap';
 import { getCardSize, resolveTemplate } from '../utils/cardTemplate';
 import { screenToField, FIELD_OFFSET } from '../utils/viewport';
+import { computePerPlayerBaseYs } from '../utils/areaCsv';
 import './Field.css';
 
 const ViewportRefContext = createContext<React.RefObject<HTMLDivElement | null> | null>(null);
@@ -23,6 +24,7 @@ export function Field() {
   const cardTemplates = useGameStore((s) => s.cardTemplates);
   const cardStacks = useGameStore((s) => s.cardStacks);
   const areas = useGameStore((s) => s.areas);
+  const players = useGameStore((s) => s.players);
   const counters = useGameStore((s) => s.counters);
   const images = useGameStore((s) => s.images);
   const memos = useGameStore((s) => s.memos);
@@ -462,9 +464,44 @@ export function Field() {
             transformOrigin: '0 0',
           } as React.CSSProperties}
         >
-          {areas.map((area) => (
-            <AreaOverlay key={area.areaId} area={area} />
-          ))}
+          {(() => {
+            // セットアップ済み（players>0）のとき、_pN エリアは N < players.length のみ表示
+            const visibleAreas = areas.filter((area) => {
+              if (players.length === 0) return true;
+              const m = area.areaId.match(/_p(\d+)$/);
+              return m ? Number(m[1]) < players.length : true;
+            });
+
+            // エリアIDのセット（明示定義チェック用）
+            const areaIdSet = new Set(areas.map((a) => a.areaId));
+            const perPlayerBaseYs = players.length > 0
+              ? computePerPlayerBaseYs(areas, players.length)
+              : new Map<string, number>();
+            return visibleAreas.flatMap((area) => {
+              // per_player: true でも、p_witch_p0 等が明示定義されていれば自動展開しない
+              if (!area.perPlayer || players.length === 0) {
+                return [<AreaOverlay key={area.areaId} area={area} />];
+              }
+              // プレイヤー固有エリアが1つでも明示定義されていたら自動展開しない
+              const hasExplicit = players.some((_, pIdx) => areaIdSet.has(`${area.areaId}_p${pIdx}`));
+              if (hasExplicit) {
+                return []; // 明示定義された個別エリアに任せる
+              }
+              // 明示定義なし → 従来の自動縦展開（後方互換）
+              const baseY = perPlayerBaseYs.get(area.areaId) ?? area.y;
+              return players.map((player, pIdx) => (
+                <AreaOverlay
+                  key={`${area.areaId}_p${pIdx}`}
+                  area={{
+                    ...area,
+                    areaId: `${area.areaId}_p${pIdx}`,
+                    y: baseY + pIdx * area.height,
+                    name: `${area.name} (${player.name})`,
+                  }}
+                />
+              ));
+            });
+          })()}
 
           {singleCards.map((instance) => {
             const def = defMap.get(instance.definitionId);

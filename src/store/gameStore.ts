@@ -110,6 +110,7 @@ interface GameState {
 
   // スタック結合
   mergeStacks: (targetStackId: string, sourceStackId: string) => void;
+  collectToStack: (stackId: string) => void;
 
   // カウンター
   addCounter: (name: string, x: number, y: number) => void;
@@ -234,6 +235,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           visibility: 'hidden',
           ownerId: null,
           stackId: null,
+          homeStackId: null,
           locked: false,
           rotation: 0,
         };
@@ -374,7 +376,14 @@ export const useGameStore = create<GameState>((set, get) => ({
       const updatedCards = { ...state.cardInstances };
       cardIds.forEach((id) => {
         if (updatedCards[id]) {
-          updatedCards[id] = { ...updatedCards[id], stackId };
+          updatedCards[id] = {
+            ...updatedCards[id],
+            stackId,
+            homeStackId: updatedCards[id].homeStackId || stackId,
+            face: 'down',
+            visibility: 'hidden',
+            ownerId: null,
+          };
         }
       });
       return {
@@ -392,10 +401,19 @@ export const useGameStore = create<GameState>((set, get) => ({
     set((state) => {
       const stack = state.cardStacks[stackId];
       if (!stack) return state;
+      const card = state.cardInstances[cardInstanceId];
+      if (!card) return state;
       return {
         cardInstances: {
           ...state.cardInstances,
-          [cardInstanceId]: { ...state.cardInstances[cardInstanceId], stackId },
+          [cardInstanceId]: {
+            ...card,
+            stackId,
+            homeStackId: card.homeStackId || stackId,
+            face: 'down',
+            visibility: 'hidden',
+            ownerId: null,
+          },
         },
         cardStacks: {
           ...state.cardStacks,
@@ -431,25 +449,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       }
     });
 
+    // 残り0枚でも山札を残す（返却先プレースホルダーとして機能）
     const updatedStacks = { ...state.cardStacks };
-    if (remainingIds.length === 0) {
-      delete updatedStacks[stackId];
-    } else if (remainingIds.length === 1) {
-      // 残り1枚→単体カードに戻す
-      const lastId = remainingIds[0];
-      if (updatedCards[lastId]) {
-        updatedCards[lastId] = {
-          ...updatedCards[lastId],
-          stackId: null,
-          x: stack.x,
-          y: stack.y,
-          zIndex: getNextZIndex(),
-        };
-      }
-      delete updatedStacks[stackId];
-    } else {
-      updatedStacks[stackId] = { ...stack, cardInstanceIds: remainingIds };
-    }
+    updatedStacks[stackId] = { ...stack, cardInstanceIds: remainingIds };
 
     set({ cardInstances: updatedCards, cardStacks: updatedStacks });
     return drawnCards;
@@ -586,6 +588,35 @@ export const useGameStore = create<GameState>((set, get) => ({
         cardStacks: {
           ...state.cardStacks,
           [stackId]: { ...stack, zIndex: getNextZIndex() },
+        },
+      };
+    }),
+
+  collectToStack: (stackId) =>
+    set((state) => {
+      const stack = state.cardStacks[stackId];
+      if (!stack) return state;
+      const updatedCards = { ...state.cardInstances };
+      const newIds: string[] = [];
+      Object.values(state.cardInstances).forEach((card) => {
+        // homeStackIdが一致するフィールド上のカードのみ回収
+        if (!card.stackId && card.homeStackId === stackId) {
+          updatedCards[card.instanceId] = {
+            ...card,
+            stackId,
+            face: 'down',
+            visibility: 'hidden',
+            ownerId: null,
+          };
+          newIds.push(card.instanceId);
+        }
+      });
+      if (newIds.length === 0) return state;
+      return {
+        cardInstances: updatedCards,
+        cardStacks: {
+          ...state.cardStacks,
+          [stackId]: { ...stack, cardInstanceIds: [...stack.cardInstanceIds, ...newIds] },
         },
       };
     }),
@@ -966,6 +997,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({
       cardInstances: {},
       cardStacks: {},
+      areas: [],
       counters: {},
       images: {},
       memos: {},
