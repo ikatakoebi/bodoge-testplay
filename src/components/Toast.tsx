@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useUIStore, ToastMessage } from '../store/uiStore';
+import { useUIStore } from '../store/uiStore';
+import type { ToastMessage } from '../store/uiStore';
 import './Toast.css';
 
 // 個別Toastアイテム（フェードアウトアニメーション管理）
