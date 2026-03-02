@@ -302,7 +302,7 @@ export const CardComponent = memo(function CardComponent({ instance, definition,
             <CardField key={i} field={field} definition={definition} />
           ))}
           {/* カード名に対応するイラストが存在すれば表示 */}
-          {!template.layout.some((f) => f.field === 'illustration') && (
+          {!template.layout.some((f) => f.field === 'illustration' || f.field === '__img') && (
             <CardAutoIllust name={String(definition.name || '')} />
           )}
           {isOwnerOnly && <span className="card-owner-badge">自</span>}
@@ -357,6 +357,8 @@ function CardField({ field, definition }: { field: CardTemplateField; definition
     ? Math.max(baseFontSize, 13)
     : baseFontSize;
 
+  const isCover = field.position === 'cover';
+
   return (
     <div
       className={`card-field card-field-${field.position}`}
@@ -365,11 +367,21 @@ function CardField({ field, definition }: { field: CardTemplateField; definition
         fontWeight: field.bold ? 'bold' : 'normal',
         fontStyle: field.italic ? 'italic' : 'normal',
         color: field.textColor || undefined,
-        ...(isImg && field.height ? { height: field.height, minHeight: 0 } : {}),
+        ...(isImg && field.height && !isCover ? { height: field.height, minHeight: 0 } : {}),
+        ...(isCover ? {
+          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+          padding: 0, display: 'flex',
+        } : {}),
       }}
     >
       {isImg ? (
-        <img src={strVal} alt="" draggable={false} className="card-field-image" />
+        <img
+          src={strVal}
+          alt=""
+          draggable={false}
+          className={isCover ? undefined : 'card-field-image'}
+          style={isCover ? { width: '100%', height: '100%', objectFit: 'cover' } : undefined}
+        />
       ) : field.shape === 'circle' ? (
         <span className="card-field-badge" style={{ backgroundColor: field.bgColor || '#ccc' }}>
           {strVal}

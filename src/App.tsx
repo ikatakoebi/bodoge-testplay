@@ -45,6 +45,7 @@ function App() {
   const flipCards = useGameStore((s) => s.flipCards);
   const saveSnapshot = useGameStore((s) => s.saveSnapshot);
   const addLog = useGameStore((s) => s.addLog);
+  const duplicateCards = useGameStore((s) => s.duplicateCards);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
   useEffect(() => {
@@ -75,6 +76,18 @@ function App() {
       if ((e.ctrlKey || e.metaKey) && (key === 'y' || (key === 'z' && e.shiftKey))) {
         e.preventDefault();
         redo();
+        return;
+      }
+
+      // Ctrl+D で選択カード複製
+      if ((e.ctrlKey || e.metaKey) && key === 'd') {
+        e.preventDefault();
+        const { selectedCardIds } = useUIStore.getState();
+        if (selectedCardIds.length > 0) {
+          saveSnapshot();
+          duplicateCards(selectedCardIds);
+          addLog(`${selectedCardIds.length}枚のカードを複製した`);
+        }
         return;
       }
 
@@ -114,7 +127,7 @@ function App() {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [undo, redo, rotateCards, removeCards, flipCards, saveSnapshot, addLog]);
+  }, [undo, redo, rotateCards, removeCards, flipCards, saveSnapshot, addLog, duplicateCards]);
 
   return (
     <div className="app">

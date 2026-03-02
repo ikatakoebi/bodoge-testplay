@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { CardDefinition, CardInstance, CardStack, Area, Counter, ImageObject, CardTemplate, LogEntry, Memo, DiceResult, Token, Player, BoardImage } from '../types';
 import type { CounterDef } from '../utils/counterCsv';
-import { DEFAULT_TEMPLATE, getCardSize, resolveTemplate } from '../utils/cardTemplate';
+import { DEFAULT_TEMPLATE, getCardSize, resolveTemplate, createImageCardTemplate } from '../utils/cardTemplate';
 import { useUIStore } from './uiStore';
 
 let nextZIndex = 1;
@@ -104,6 +104,7 @@ interface GameState {
   rotateCard: (instanceId: string, delta: number) => void;
   rotateCards: (ids: string[], delta: number) => void;
   removeCards: (ids: string[]) => void;
+  duplicateCards: (instanceIds: string[]) => void;
   setAreas: (areas: Area[]) => void;
   addArea: (area: Area) => void;
   removeArea: (areaId: string) => void;
@@ -138,6 +139,7 @@ interface GameState {
 
   // 画像
   addImage: (url: string, x: number, y: number, width: number, height: number) => void;
+  importImageAsCard: (url: string, x: number, y: number, width: number, height: number) => void;
   moveImage: (imageId: string, x: number, y: number) => void;
   resizeImage: (imageId: string, width: number, height: number) => void;
   removeImage: (imageId: string) => void;
@@ -394,6 +396,33 @@ export const useGameStore = create<GameState>((set, get) => ({
         },
       };
     }),
+
+  duplicateCards: (instanceIds) => {
+    const state = get();
+    const newInstances: Record<string, CardInstance> = {};
+    for (const instanceId of instanceIds) {
+      const card = state.cardInstances[instanceId];
+      if (!card) continue;
+      const newId = crypto.randomUUID();
+      newInstances[newId] = {
+        instanceId: newId,
+        definitionId: card.definitionId,
+        face: card.face,
+        visibility: card.visibility,
+        rotation: card.rotation,
+        locked: card.locked,
+        x: card.x + 12,
+        y: card.y + 12,
+        zIndex: getNextZIndex(),
+        stackId: null,
+        homeStackId: null,
+        ownerId: null,
+      };
+    }
+    set((s) => ({
+      cardInstances: { ...s.cardInstances, ...newInstances },
+    }));
+  },
 
   setAreas: (areas) => set({ areas }),
   addArea: (area) => set((state) => ({ areas: [...state.areas, area] })),
@@ -756,6 +785,40 @@ export const useGameStore = create<GameState>((set, get) => ({
         [imageId]: { imageId, url, x, y, width, height, zIndex: getNextZIndex(), locked: false },
       },
     }));
+  },
+
+  importImageAsCard: (url, x, y, width, height) => {
+    const id = crypto.randomUUID();
+    const template = createImageCardTemplate(width, height);
+    const templateKey = `__img_${id}`;
+    const defId = `__img_${id}`;
+    const definition = { id: defId, name: '', __img: url, template: templateKey };
+    const instanceId = crypto.randomUUID();
+    set((state) => {
+      const newDefs = [...state.cardDefinitions, definition];
+      return {
+        cardTemplates: { ...state.cardTemplates, [templateKey]: template },
+        cardDefinitions: newDefs,
+        cardDefinitionMap: new Map(newDefs.map((d) => [d.id, d])),
+        cardInstances: {
+          ...state.cardInstances,
+          [instanceId]: {
+            instanceId,
+            definitionId: defId,
+            x,
+            y,
+            zIndex: Date.now(),
+            face: 'up',
+            visibility: 'public',
+            ownerId: null,
+            stackId: null,
+            homeStackId: null,
+            locked: false,
+            rotation: 0,
+          },
+        },
+      };
+    });
   },
 
   moveImage: (imageId, x, y) =>

@@ -94,7 +94,7 @@ export function Field() {
   const tokens = useGameStore((s) => s.tokens);
   const boardImages = useGameStore((s) => s.boardImages);
   const updateBoardImage = useGameStore((s) => s.updateBoardImage);
-  const addImage = useGameStore((s) => s.addImage);
+  const importImageAsCard = useGameStore((s) => s.importImageAsCard);
   const addToStack = useGameStore((s) => s.addToStack);
   const createStack = useGameStore((s) => s.createStack);
   const mergeStacks = useGameStore((s) => s.mergeStacks);
@@ -213,8 +213,8 @@ export function Field() {
         img.onload = () => {
           const maxW = 300;
           const scale = img.width > maxW ? maxW / img.width : 1;
-          addImage(url, fp.x, fp.y, img.width * scale, img.height * scale);
-          addLog(`画像を配置した: ${file.name}`);
+          importImageAsCard(url, fp.x, fp.y, img.width * scale, img.height * scale);
+          addLog(`画像をカードとして配置した: ${file.name}`);
         };
         img.src = url;
       }
@@ -229,7 +229,7 @@ export function Field() {
       el.removeEventListener('dragleave', handleDragLeave);
       el.removeEventListener('drop', handleDrop);
     };
-  }, [addImage, addLog]);
+  }, [importImageAsCard, addLog]);
 
   // Wheel zoom (attached with passive: false)
   useEffect(() => {

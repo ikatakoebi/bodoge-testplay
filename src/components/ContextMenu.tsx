@@ -91,6 +91,20 @@ export function ContextMenu() {
   const isMultiSelection = targetType === 'card' && targetId
     && selectedCardIds.includes(targetId) && selectedCardIds.length > 1;
 
+  // 現在のカードの周囲にある重なったカードを検出
+  const overlappingCards = (() => {
+    if (targetType !== 'card' || !card) return [];
+    const OVERLAP_THRESHOLD = 40;
+    return Object.values(cardInstances).filter((c) => {
+      if (c.instanceId === targetId) return false;
+      if (c.stackId !== null) return false; // スタック内は除外
+      const dx = Math.abs(c.x - card.x);
+      const dy = Math.abs(c.y - card.y);
+      return dx <= OVERLAP_THRESHOLD && dy <= OVERLAP_THRESHOLD;
+    });
+  })();
+  const hasOverlapping = overlappingCards.length > 0 && !isMultiSelection;
+
   const alignCards = (direction: 'horizontal' | 'vertical') => {
     const cards = selectedCardIds
       .map((id) => cardInstances[id])
@@ -194,6 +208,19 @@ export function ContextMenu() {
 
       {targetType === 'card' && targetId && !isMultiSelection && (
         <>
+          {hasOverlapping && targetId && (
+            <>
+              <button className="context-menu-item" onClick={() => handleAction(() => {
+                const allIds = [targetId, ...overlappingCards.map((c) => c.instanceId)];
+                createStack(allIds, card!.x, card!.y);
+                setSelectedCards([]);
+                addLog(`${allIds.length}枚の重なったカードで山札を作った`);
+              })}>
+                重なっているカードで山札を作る ({overlappingCards.length + 1}枚)
+              </button>
+              <div className="context-menu-separator" />
+            </>
+          )}
           <button className="context-menu-item" onClick={() => handleAction(() => {
             flipCard(targetId, 'owner', currentPlayerId);
             addLog('カードをめくった（自分だけ）');

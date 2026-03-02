@@ -114,7 +114,7 @@ export type CardSizePreset = 'standard' | 'mini' | 'tarot' | 'custom';
 
 export interface CardTemplateField {
   field: string;
-  position: 'top' | 'top-left' | 'top-right' | 'center' | 'center-left' | 'center-right' | 'bottom' | 'bottom-left' | 'bottom-right';
+  position: 'top' | 'top-left' | 'top-right' | 'center' | 'center-left' | 'center-right' | 'bottom' | 'bottom-left' | 'bottom-right' | 'cover';
   fontSize?: number;
   fontSizeField?: string; // カードCSVの列名からfontSizeを取得
   bold?: boolean;

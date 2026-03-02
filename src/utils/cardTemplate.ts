@@ -1,4 +1,4 @@
-import type { CardTemplate } from '../types';
+import type { CardTemplate, CardTemplateField } from '../types';
 
 const CARD_SIZE_PRESETS: Record<string, { width: number; height: number }> = {
   standard: { width: 126, height: 176 },
@@ -30,6 +30,18 @@ export function getCardSize(template: CardTemplate): { width: number; height: nu
     return { width: template.size.width, height: template.size.height };
   }
   return CARD_SIZE_PRESETS[template.size.preset] || CARD_SIZE_PRESETS.standard;
+}
+
+/** 画像をカード化するためのテンプレートを生成 */
+export function createImageCardTemplate(width: number, height: number): CardTemplate {
+  return {
+    size: { preset: 'custom', width, height },
+    layout: [
+      { field: '__img', position: 'cover' as CardTemplateField['position'], height: '100%' },
+    ],
+    back: { bgColor: '#333', text: '' },
+    border: { color: '#555', radius: 6 },
+  };
 }
 
 /** カード定義のtemplate名からテンプレートを解決。見つからなければdefault→DEFAULT_TEMPLATE */

@@ -194,6 +194,24 @@
   letter-spacing: 0.5px;
 }
 
+/* cover: カード全面に画像を表示 */
+.card-field-cover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.card-field-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
 /* バッジ（コストなど） */
 .card-field-badge {
   display: inline-flex;
