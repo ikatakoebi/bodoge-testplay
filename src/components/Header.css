@@ -58,6 +58,22 @@
   line-height: 1;
 }
 
+/* 神視点モードボタン */
+.header-btn-god {
+  border-color: #865;
+  color: #edc;
+}
+
+.header-btn-god:hover {
+  background: #4a3a2a;
+}
+
+.header-btn-god.active {
+  background: #6a4a1a;
+  border-color: #b88a30;
+  color: #ffd866;
+}
+
 .header-btn-danger {
   border-color: #644;
 }

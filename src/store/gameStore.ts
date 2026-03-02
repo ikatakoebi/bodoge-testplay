@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { CardDefinition, CardInstance, CardStack, Area, Counter, ImageObject, CardTemplate, LogEntry, Memo, DiceResult, Token, Player } from '../types';
+import type { CardDefinition, CardInstance, CardStack, Area, Counter, ImageObject, CardTemplate, LogEntry, Memo, DiceResult, Token, Player, BoardImage } from '../types';
 import type { CounterDef } from '../utils/counterCsv';
 import { DEFAULT_TEMPLATE, getCardSize, resolveTemplate } from '../utils/cardTemplate';
 import { useUIStore } from './uiStore';
@@ -26,6 +26,7 @@ interface Snapshot {
   memos: Record<string, Memo>;
   images: Record<string, ImageObject>;
   tokens: Record<string, Token>;
+  boardImages: BoardImage[];
 }
 
 const MAX_UNDO = 50;
@@ -40,6 +41,7 @@ function takeSnapshot(state: GameState): Snapshot {
     memos: { ...state.memos },
     images: { ...state.images },
     tokens: { ...state.tokens },
+    boardImages: [...state.boardImages],
   };
 }
 
@@ -48,6 +50,17 @@ function saveUndo(state: GameState) {
   if (undoStack.length > MAX_UNDO) undoStack.shift();
   redoStack = [];
 }
+
+// セーブデータのメタ情報
+export interface SaveMeta {
+  name: string;
+  timestamp: number;
+  playerCount: number;
+}
+
+// localStorage キー
+const SAVES_INDEX_KEY = 'bodoge_saves';
+const SAVE_DATA_PREFIX = 'bodoge_save_';
 
 interface GameState {
   // マスターデータ
@@ -67,6 +80,7 @@ interface GameState {
   images: Record<string, ImageObject>;
   memos: Record<string, Memo>;
   tokens: Record<string, Token>;
+  boardImages: BoardImage[];
   diceResults: DiceResult[];
   rulesText: string;
 
@@ -172,8 +186,27 @@ interface GameState {
   redo: () => void;
   saveSnapshot: () => void;
 
+  // ボード画像（フィールド背景）
+  addBoardImage: (url: string, x: number, y: number, width: number, height: number) => void;
+  updateBoardImage: (boardImageId: string, updates: Partial<Omit<BoardImage, 'boardImageId'>>) => void;
+  removeBoardImage: (boardImageId: string) => void;
+
+  // エリア内カード整列
+  arrangeCardsInArea: (areaId: string) => void;
+
+  // 山札N枚公開
+  revealFromStack: (stackId: string, count: number) => string[];
+  takeRevealedCard: (instanceId: string, x: number, y: number) => void;
+  returnRevealedCards: (cardIds: string[], stackId: string) => void;
+
   // リセット
   clearField: () => void;
+
+  // セーブ/ロード
+  saveGame: (name: string) => void;
+  loadGame: (name: string) => boolean;
+  deleteSave: (name: string) => void;
+  listSaves: () => SaveMeta[];
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -189,6 +222,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   images: {},
   memos: {},
   tokens: {},
+  boardImages: [],
   diceResults: [],
   rulesText: '',
   logs: [],
@@ -969,6 +1003,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       memos: snapshot.memos,
       images: snapshot.images,
       tokens: snapshot.tokens,
+      boardImages: snapshot.boardImages,
     });
     get().addLog('Undo');
   },
@@ -984,9 +1019,123 @@ export const useGameStore = create<GameState>((set, get) => ({
       memos: snapshot.memos,
       images: snapshot.images,
       tokens: snapshot.tokens,
+      boardImages: snapshot.boardImages,
     });
     get().addLog('Redo');
   },
+
+  // === エリア内カード自動整列 ===
+  arrangeCardsInArea: (areaId) => {
+    const state = get();
+    const cellSize = useUIStore.getState().cellSize;
+    const area = state.areas.find((a) => a.areaId === areaId);
+    if (!area) return;
+
+    // エリアのpx座標
+    const baseX = area.x * cellSize;
+    const baseY = area.y * cellSize;
+    const areaW = area.width * cellSize;
+    const areaH = area.height * cellSize;
+
+    // エリア範囲内にあるフィールド上のカード（スタックに属さない）を収集
+    const cardsInArea = Object.values(state.cardInstances).filter((card) => {
+      if (card.stackId) return false;
+      return card.x >= baseX && card.x < baseX + areaW &&
+             card.y >= baseY && card.y < baseY + areaH;
+    });
+
+    if (cardsInArea.length === 0) return;
+
+    // 先頭カードのテンプレートでグリッドステップを算出
+    const dMap = new Map(state.cardDefinitions.map((d) => [d.id, d]));
+    const firstDef = dMap.get(cardsInArea[0].definitionId);
+    const tmpl = resolveTemplate(state.cardTemplates, firstDef?.template as string | undefined);
+    const cardSize = getCardSize(tmpl);
+
+    const colStep = Math.ceil((cardSize.width + 8) / cellSize) * cellSize;
+    const rowStep = Math.ceil((cardSize.height + 8) / cellSize) * cellSize;
+    const maxCols = Math.max(1, Math.floor(areaW / colStep));
+
+    // カードをグリッド状に再配置
+    const updated = { ...state.cardInstances };
+    cardsInArea.forEach((card, i) => {
+      updated[card.instanceId] = {
+        ...updated[card.instanceId],
+        x: baseX + (i % maxCols) * colStep,
+        y: baseY + Math.floor(i / maxCols) * rowStep,
+      };
+    });
+    set({ cardInstances: updated });
+  },
+
+  // === 山札N枚公開 ===
+  revealFromStack: (stackId, count) => {
+    const state = get();
+    const stack = state.cardStacks[stackId];
+    if (!stack || stack.cardInstanceIds.length === 0) return [];
+    const n = Math.min(count, stack.cardInstanceIds.length);
+    const revealedIds = stack.cardInstanceIds.slice(0, n);
+    const remainingIds = stack.cardInstanceIds.slice(n);
+    // スタックから一時的に取り出す（カード自体のstackIdはnullに）
+    const updatedCards = { ...state.cardInstances };
+    revealedIds.forEach((id) => {
+      if (updatedCards[id]) {
+        updatedCards[id] = { ...updatedCards[id], stackId: null };
+      }
+    });
+    const updatedStacks = { ...state.cardStacks };
+    updatedStacks[stackId] = { ...stack, cardInstanceIds: remainingIds };
+    set({ cardInstances: updatedCards, cardStacks: updatedStacks });
+    return revealedIds;
+  },
+
+  takeRevealedCard: (instanceId, x, y) =>
+    set((state) => {
+      const card = state.cardInstances[instanceId];
+      if (!card) return state;
+      return {
+        cardInstances: {
+          ...state.cardInstances,
+          [instanceId]: {
+            ...card,
+            x,
+            y,
+            face: 'up',
+            visibility: 'public',
+            ownerId: null,
+            zIndex: getNextZIndex(),
+          },
+        },
+      };
+    }),
+
+  returnRevealedCards: (cardIds, stackId) =>
+    set((state) => {
+      const stack = state.cardStacks[stackId];
+      if (!stack) return state;
+      const updatedCards = { ...state.cardInstances };
+      cardIds.forEach((id) => {
+        if (updatedCards[id]) {
+          updatedCards[id] = {
+            ...updatedCards[id],
+            stackId,
+            face: 'down',
+            visibility: 'hidden',
+            ownerId: null,
+          };
+        }
+      });
+      return {
+        cardInstances: updatedCards,
+        cardStacks: {
+          ...state.cardStacks,
+          [stackId]: {
+            ...stack,
+            cardInstanceIds: [...cardIds, ...stack.cardInstanceIds],
+          },
+        },
+      };
+    }),
 
   clearField: () => {
     instanceCounter = 0;
@@ -1002,8 +1151,108 @@ export const useGameStore = create<GameState>((set, get) => ({
       images: {},
       memos: {},
       tokens: {},
+      boardImages: [],
       diceResults: [],
       logs: [],
     });
+  },
+
+  // === ボード画像（フィールド背景） ===
+  addBoardImage: (url, x, y, width, height) => {
+    const boardImageId = `bimg_${Date.now()}`;
+    set((state) => ({
+      boardImages: [...state.boardImages, { boardImageId, url, x, y, width, height, opacity: 1, locked: false }],
+    }));
+  },
+
+  updateBoardImage: (boardImageId, updates) =>
+    set((state) => ({
+      boardImages: state.boardImages.map((bi) =>
+        bi.boardImageId === boardImageId ? { ...bi, ...updates } : bi
+      ),
+    })),
+
+  removeBoardImage: (boardImageId) =>
+    set((state) => ({
+      boardImages: state.boardImages.filter((bi) => bi.boardImageId !== boardImageId),
+    })),
+
+  // === セーブ/ロード ===
+  saveGame: (name) => {
+    const state = get();
+    // 保存するゲーム状態データ
+    const saveData = {
+      cardInstances: state.cardInstances,
+      cardStacks: state.cardStacks,
+      counters: state.counters,
+      players: state.players,
+      currentPlayerId: state.currentPlayerId,
+      areas: state.areas,
+      cardDefinitions: state.cardDefinitions,
+      cardTemplates: state.cardTemplates,
+      memos: state.memos,
+      images: state.images,
+      tokens: state.tokens,
+      boardImages: state.boardImages,
+    };
+    // データ本体を保存
+    localStorage.setItem(SAVE_DATA_PREFIX + name, JSON.stringify(saveData));
+    // メタ情報一覧を更新
+    const meta: SaveMeta = {
+      name,
+      timestamp: Date.now(),
+      playerCount: state.players.length,
+    };
+    const existingIndex = JSON.parse(localStorage.getItem(SAVES_INDEX_KEY) || '[]') as SaveMeta[];
+    const filtered = existingIndex.filter((m: SaveMeta) => m.name !== name);
+    filtered.unshift(meta);
+    localStorage.setItem(SAVES_INDEX_KEY, JSON.stringify(filtered));
+    state.addLog(`ゲーム状態を保存: ${name}`);
+  },
+
+  loadGame: (name) => {
+    const raw = localStorage.getItem(SAVE_DATA_PREFIX + name);
+    if (!raw) return false;
+    try {
+      const data = JSON.parse(raw);
+      set({
+        cardInstances: data.cardInstances || {},
+        cardStacks: data.cardStacks || {},
+        counters: data.counters || {},
+        players: data.players || [],
+        currentPlayerId: data.currentPlayerId || 'p0',
+        areas: data.areas || [],
+        cardDefinitions: data.cardDefinitions || [],
+        cardTemplates: data.cardTemplates || { default: DEFAULT_TEMPLATE },
+        memos: data.memos || {},
+        images: data.images || {},
+        tokens: data.tokens || {},
+        boardImages: data.boardImages || [],
+      });
+      // カウンターをリセットしてID衝突を防ぐ
+      instanceCounter = Date.now();
+      stackCounter = Date.now();
+      undoStack = [];
+      redoStack = [];
+      get().addLog(`ゲーム状態を復元: ${name}`);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  deleteSave: (name) => {
+    localStorage.removeItem(SAVE_DATA_PREFIX + name);
+    const existingIndex = JSON.parse(localStorage.getItem(SAVES_INDEX_KEY) || '[]') as SaveMeta[];
+    const filtered = existingIndex.filter((m: SaveMeta) => m.name !== name);
+    localStorage.setItem(SAVES_INDEX_KEY, JSON.stringify(filtered));
+  },
+
+  listSaves: () => {
+    try {
+      return JSON.parse(localStorage.getItem(SAVES_INDEX_KEY) || '[]') as SaveMeta[];
+    } catch {
+      return [];
+    }
   },
 }));

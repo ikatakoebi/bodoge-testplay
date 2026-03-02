@@ -41,6 +41,9 @@ interface UIState {
   // エリア作成モード
   areaDrawMode: boolean;
 
+  // 神視点モード（山札以外の全カードを表向き表示）
+  godView: boolean;
+
   // トースト通知
   toasts: ToastMessage[];
 
@@ -49,6 +52,12 @@ interface UIState {
 
   // モーダルダイアログ
   modal: ModalState;
+
+  // 使い方ヘルプモーダル
+  helpOpen: boolean;
+
+  // 山札N枚公開モーダル
+  revealModal: { stackId: string; cardIds: string[] } | null;
 
   toggleGrid: () => void;
   setCellSize: (size: number) => void;
@@ -63,6 +72,7 @@ interface UIState {
   setViewportSize: (width: number, height: number) => void;
   resetView: () => void;
   setAreaDrawMode: (enabled: boolean) => void;
+  toggleGodView: () => void;
 
   addToast: (text: string, type?: ToastMessage['type']) => void;
   removeToast: (id: string) => void;
@@ -70,6 +80,11 @@ interface UIState {
 
   showModal: (title: string, defaultValue: string, inputType: 'text' | 'confirm', onSubmit: (value: string) => void, onCancel?: () => void) => void;
   hideModal: () => void;
+
+  toggleHelp: () => void;
+
+  openRevealModal: (stackId: string, cardIds: string[]) => void;
+  closeRevealModal: () => void;
 }
 
 const emptyModal: ModalState = { visible: false, title: '', defaultValue: '', inputType: 'text', onSubmit: null, onCancel: null };
@@ -85,9 +100,12 @@ export const useUIStore = create<UIState>((set) => ({
   isPanning: false,
   viewportSize: { width: 0, height: 0 },
   areaDrawMode: false,
+  godView: false,
   toasts: [],
   snapGuides: [],
   modal: { ...emptyModal },
+  helpOpen: false,
+  revealModal: null,
 
   toggleGrid: () => set((s) => ({ gridEnabled: !s.gridEnabled })),
   setCellSize: (size) => set({ cellSize: size }),
@@ -119,6 +137,7 @@ export const useUIStore = create<UIState>((set) => ({
     panY: 10000 - s.viewportSize.height / 2,
   })),
   setAreaDrawMode: (enabled) => set({ areaDrawMode: enabled }),
+  toggleGodView: () => set((s) => ({ godView: !s.godView })),
 
   addToast: (text, type = 'info') => {
     const id = `toast_${Date.now()}`;
@@ -133,4 +152,9 @@ export const useUIStore = create<UIState>((set) => ({
   showModal: (title, defaultValue, inputType, onSubmit, onCancel) =>
     set({ modal: { visible: true, title, defaultValue, inputType, onSubmit: onSubmit, onCancel: onCancel || null } }),
   hideModal: () => set({ modal: { ...emptyModal } }),
+
+  toggleHelp: () => set((s) => ({ helpOpen: !s.helpOpen })),
+
+  openRevealModal: (stackId, cardIds) => set({ revealModal: { stackId, cardIds } }),
+  closeRevealModal: () => set({ revealModal: null }),
 }));

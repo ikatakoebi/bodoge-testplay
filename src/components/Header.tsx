@@ -12,6 +12,7 @@ import { parseSetupCsv } from '../utils/setupCsv';
 import { stringify as stringifyYaml } from 'yaml';
 import { clearSoloState } from '../store/syncBridge';
 import './Header.css';
+import './HelpModal.css';
 
 function extractSheetId(url: string): string | null {
   const m = url.match(/\/spreadsheets\/d\/([A-Za-z0-9_-]{20,})/);
@@ -25,6 +26,9 @@ export function Header() {
 
   const gridEnabled = useUIStore((s) => s.gridEnabled);
   const toggleGrid = useUIStore((s) => s.toggleGrid);
+  const godView = useUIStore((s) => s.godView);
+  const toggleGodView = useUIStore((s) => s.toggleGodView);
+  const toggleHelp = useUIStore((s) => s.toggleHelp);
   const zoom = useUIStore((s) => s.zoom);
   const resetView = useUIStore((s) => s.resetView);
   const clearField = useGameStore((s) => s.clearField);
@@ -230,6 +234,9 @@ export function Header() {
     <header className="app-header">
       <div className="header-left">
         <h1 className="app-title">Bodoge TestPlay</h1>
+        <button className="header-btn-help" onClick={toggleHelp} title="使い方ガイド">
+          ?
+        </button>
         {infoParts.length > 0 && (
           <span className="header-info">{infoParts.join(' / ')}</span>
         )}
@@ -259,6 +266,13 @@ export function Header() {
             </div>
           )}
         </div>
+        <button
+          className={`header-btn header-btn-god ${godView ? 'active' : ''}`}
+          onClick={toggleGodView}
+          title="神視点モード: 山札以外の全カードを表向き表示"
+        >
+          {godView ? '神視点 ON' : '神視点'}
+        </button>
         <button className="header-btn header-btn-icon" onClick={undo} title="元に戻す (Ctrl+Z)">
           ↶
         </button>

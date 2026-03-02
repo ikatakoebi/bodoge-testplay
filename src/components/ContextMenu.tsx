@@ -48,9 +48,12 @@ export function ContextMenu() {
   const createStack = useGameStore((s) => s.createStack);
   const addToStack = useGameStore((s) => s.addToStack);
   const collectToStack = useGameStore((s) => s.collectToStack);
+  const arrangeCardsInArea = useGameStore((s) => s.arrangeCardsInArea);
+  const revealFromStack = useGameStore((s) => s.revealFromStack);
   const currentPlayerId = useGameStore((s) => s.currentPlayerId);
   const players = useGameStore((s) => s.players);
   const setSelectedCards = useUIStore((s) => s.setSelectedCards);
+  const openRevealModal = useUIStore((s) => s.openRevealModal);
 
   const cardInstances = useGameStore((s) => s.cardInstances);
   const cardTemplates = useGameStore((s) => s.cardTemplates);
@@ -308,6 +311,17 @@ export function ContextMenu() {
               一番上を見る（自分だけ）
             </button>
           )}
+          <button className="context-menu-item" onClick={() => {
+            hideContextMenu();
+            saveSnapshot();
+            const ids = revealFromStack(targetId, 3);
+            if (ids.length > 0) {
+              openRevealModal(targetId, ids);
+              addLog(`山札から${ids.length}枚公開した`);
+            }
+          }}>
+            N枚公開...
+          </button>
           <div className="context-menu-separator" />
           <button className="context-menu-item" onClick={() => handleAction(() => {
             shuffleStack(targetId);
@@ -400,6 +414,12 @@ export function ContextMenu() {
             addLog(area?.locked === false ? 'エリアをロックした' : 'エリアのロックを解除した');
           })}>
             {area?.locked === false ? 'ロック' : 'ロック解除'}
+          </button>
+          <button className="context-menu-item" onClick={() => handleAction(() => {
+            arrangeCardsInArea(targetId);
+            addLog('エリア内のカードを整列した');
+          })}>
+            整列
           </button>
           <button className="context-menu-item" onClick={() => {
             const a = areas.find((a) => a.areaId === targetId);

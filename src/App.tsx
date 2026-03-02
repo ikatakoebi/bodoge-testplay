@@ -7,6 +7,7 @@ import { ShortcutHelp } from './components/ShortcutHelp';
 import { DiceFloat } from './components/DiceFloat';
 import { ToastContainer } from './components/Toast';
 import { ModalDialog } from './components/ModalDialog';
+import { HelpModal } from './components/HelpModal';
 import { useGameStore } from './store/gameStore';
 import { useUIStore } from './store/uiStore';
 import { useSyncStore } from './store/syncStore';
@@ -126,6 +127,7 @@ function App() {
       <DiceFloat />
       <ToastContainer />
       <ModalDialog />
+      <HelpModal />
       {showShortcuts && <ShortcutHelp onClose={() => setShowShortcuts(false)} />}
     </div>
   );

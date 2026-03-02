@@ -153,10 +153,58 @@ export function CardComponent({ instance, definition, template, onDragEnd }: Pro
           setSelectedCards([instance.instanceId]);
         }
       } else {
+        // エリア内にドロップされたらグリッドスナップ
+        const gameState = useGameStore.getState();
+        const uiState = useUIStore.getState();
+        const cs = uiState.cellSize;
+        const card = gameState.cardInstances[instance.instanceId];
+        if (card) {
+          const dMap = new Map(gameState.cardDefinitions.map((d) => [d.id, d]));
+          const cDef = dMap.get(card.definitionId);
+          const cTmpl = resolveTemplate(gameState.cardTemplates, cDef?.template as string | undefined);
+          const cardSize = getCardSize(cTmpl);
+
+          for (const area of gameState.areas) {
+            const ax = area.x * cs;
+            const ay = area.y * cs;
+            const aw = area.width * cs;
+            const ah = area.height * cs;
+
+            // カードがエリア範囲内か判定
+            if (card.x >= ax && card.x < ax + aw && card.y >= ay && card.y < ay + ah) {
+              // グリッドステップ計算
+              const colStep = Math.ceil((cardSize.width + 8) / cs) * cs;
+              const rowStep = Math.ceil((cardSize.height + 8) / cs) * cs;
+              const maxCols = Math.max(1, Math.floor(aw / colStep));
+
+              // エリア内の他のカードが占有しているスロットを収集
+              const occupied = new Set<string>();
+              for (const other of Object.values(gameState.cardInstances)) {
+                if (other.instanceId === card.instanceId || other.stackId) continue;
+                if (other.x >= ax && other.x < ax + aw && other.y >= ay && other.y < ay + ah) {
+                  const slotKey = `${other.x},${other.y}`;
+                  occupied.add(slotKey);
+                }
+              }
+
+              // 空きスロットを探す
+              const maxSlots = maxCols * Math.max(1, Math.ceil(ah / rowStep));
+              for (let i = 0; i < maxSlots; i++) {
+                const sx = ax + (i % maxCols) * colStep;
+                const sy = ay + Math.floor(i / maxCols) * rowStep;
+                if (!occupied.has(`${sx},${sy}`)) {
+                  moveCard(instance.instanceId, sx, sy);
+                  break;
+                }
+              }
+              break;
+            }
+          }
+        }
         onDragEnd?.(instance.instanceId);
       }
     }
-  }, [instance.instanceId, onDragEnd]);
+  }, [instance.instanceId, onDragEnd, moveCard]);
 
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -168,9 +216,13 @@ export function CardComponent({ instance, definition, template, onDragEnd }: Pro
     ? (definition[template.border.colorField] as string) || template.border.color || '#666'
     : template.border.color || '#666';
 
-  const isFaceUp = instance.face === 'up' && (
-    instance.visibility === 'public' ||
-    (instance.visibility === 'owner' && instance.ownerId === currentPlayerId)
+  // 神視点モード: 山札内でないカードは全て表向き表示
+  const godView = useUIStore((s) => s.godView);
+  const isFaceUp = (godView && !instance.stackId) || (
+    instance.face === 'up' && (
+      instance.visibility === 'public' ||
+      (instance.visibility === 'owner' && instance.ownerId === currentPlayerId)
+    )
   );
   const isOwnerOnly = isFaceUp && instance.visibility === 'owner';
 

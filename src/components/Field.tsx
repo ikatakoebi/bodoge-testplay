@@ -1,6 +1,7 @@
-import { useCallback, useRef, useEffect, useLayoutEffect, useState, createContext } from 'react';
+import { useCallback, useRef, useEffect, useLayoutEffect, useState, createContext, type PointerEvent as ReactPointerEvent } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { useUIStore } from '../store/uiStore';
+import type { BoardImage } from '../types';
 import { CardComponent } from './CardComponent';
 import { CardStackComponent } from './CardStack';
 import { AreaOverlay } from './AreaOverlay';
@@ -9,12 +10,74 @@ import { ImageOverlay } from './ImageOverlay';
 import { MemoComponent } from './MemoComponent';
 import { TokenComponent } from './TokenComponent';
 import { Minimap } from './Minimap';
+import { RevealModal } from './RevealModal';
 import { getCardSize, resolveTemplate } from '../utils/cardTemplate';
 import { screenToField, FIELD_OFFSET } from '../utils/viewport';
 import { computePerPlayerBaseYs } from '../utils/areaCsv';
 import './Field.css';
 
 const ViewportRefContext = createContext<React.RefObject<HTMLDivElement | null> | null>(null);
+
+/** フィールド上のボード画像（背景画像）コンポーネント */
+function BoardImageOnField({ boardImage, updateBoardImage }: {
+  boardImage: BoardImage;
+  updateBoardImage: (id: string, updates: Partial<Omit<BoardImage, 'boardImageId'>>) => void;
+}) {
+  const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
+
+  const handlePointerDown = useCallback((e: ReactPointerEvent) => {
+    if (boardImage.locked) return;
+    if (e.button !== 0) return;
+    e.stopPropagation();
+    e.preventDefault();
+    const { zoom } = useUIStore.getState();
+    dragRef.current = {
+      startX: e.clientX / zoom,
+      startY: e.clientY / zoom,
+      origX: boardImage.x,
+      origY: boardImage.y,
+    };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  }, [boardImage.locked, boardImage.x, boardImage.y]);
+
+  const handlePointerMove = useCallback((e: ReactPointerEvent) => {
+    if (!dragRef.current) return;
+    const { zoom } = useUIStore.getState();
+    const dx = e.clientX / zoom - dragRef.current.startX;
+    const dy = e.clientY / zoom - dragRef.current.startY;
+    updateBoardImage(boardImage.boardImageId, {
+      x: dragRef.current.origX + dx,
+      y: dragRef.current.origY + dy,
+    });
+  }, [boardImage.boardImageId, updateBoardImage]);
+
+  const handlePointerUp = useCallback(() => {
+    dragRef.current = null;
+  }, []);
+
+  return (
+    <img
+      src={boardImage.url}
+      alt="ボード画像"
+      draggable={false}
+      style={{
+        position: 'absolute',
+        left: boardImage.x + FIELD_OFFSET,
+        top: boardImage.y + FIELD_OFFSET,
+        width: boardImage.width,
+        height: boardImage.height,
+        opacity: boardImage.opacity,
+        zIndex: 0, // エリアやカードより下
+        pointerEvents: boardImage.locked ? 'none' : 'auto',
+        cursor: boardImage.locked ? 'default' : 'grab',
+        userSelect: 'none',
+      }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+    />
+  );
+}
 
 export function Field() {
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -29,6 +92,8 @@ export function Field() {
   const images = useGameStore((s) => s.images);
   const memos = useGameStore((s) => s.memos);
   const tokens = useGameStore((s) => s.tokens);
+  const boardImages = useGameStore((s) => s.boardImages);
+  const updateBoardImage = useGameStore((s) => s.updateBoardImage);
   const addImage = useGameStore((s) => s.addImage);
   const addToStack = useGameStore((s) => s.addToStack);
   const createStack = useGameStore((s) => s.createStack);
@@ -464,6 +529,11 @@ export function Field() {
             transformOrigin: '0 0',
           } as React.CSSProperties}
         >
+          {/* ボード画像（最背面に描画） */}
+          {boardImages.map((bi) => (
+            <BoardImageOnField key={bi.boardImageId} boardImage={bi} updateBoardImage={updateBoardImage} />
+          ))}
+
           {(() => {
             // セットアップ済み（players>0）のとき、_pN エリアは N < players.length のみ表示
             const visibleAreas = areas.filter((area) => {
@@ -583,6 +653,7 @@ export function Field() {
           )}
         </div>
         <Minimap />
+        <RevealModal />
         {isDragOver && (
           <div className="drop-overlay">
             <div className="drop-overlay-text">画像をドロップして配置</div>

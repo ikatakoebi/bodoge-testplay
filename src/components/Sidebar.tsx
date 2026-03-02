@@ -8,6 +8,8 @@ import { RulesPanel } from './RulesPanel';
 import { CardSearch } from './CardSearch';
 import { TemplateEditor } from './TemplateEditor';
 import { PlayerPanel } from './PlayerPanel';
+import { SaveLoadPanel } from './SaveLoadPanel';
+import { BoardImagePanel } from './BoardImagePanel';
 import './Sidebar.css';
 
 export function Sidebar() {
@@ -110,6 +112,13 @@ export function Sidebar() {
         <div className="area-count">{areas.length}個のエリア</div>
       </div>
 
+      <div className="sidebar-section">
+        <div className="sidebar-section-header">
+          <h3 className="sidebar-title">ボード画像</h3>
+        </div>
+        <BoardImagePanel />
+      </div>
+
       {(memoCount > 0 || tokenCount > 0) && (
         <div className="sidebar-section">
           {memoCount > 0 && (
@@ -136,6 +145,13 @@ export function Sidebar() {
           <h3 className="sidebar-title">ルール</h3>
         </div>
         <RulesPanel />
+      </div>
+
+      <div className="sidebar-section">
+        <div className="sidebar-section-header">
+          <h3 className="sidebar-title">セーブ/ロード</h3>
+        </div>
+        <SaveLoadPanel />
       </div>
 
       <div className="sidebar-section">

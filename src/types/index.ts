@@ -180,3 +180,15 @@ export interface UndoAction {
   before: unknown;
   after: unknown;
 }
+
+// === フィールド背景画像（ボード画像） ===
+export interface BoardImage {
+  boardImageId: string;
+  url: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  opacity: number;
+  locked: boolean;
+}

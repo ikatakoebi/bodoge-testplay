@@ -1,0 +1,178 @@
+/* 使い方ヘルプモーダル */
+.help-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.help-modal {
+  background: #1e1e3a;
+  border: 1px solid #444;
+  border-radius: 12px;
+  max-width: 720px;
+  width: 90vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  color: #ddd;
+}
+
+/* ヘッダー部分 */
+.help-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #333;
+  flex-shrink: 0;
+}
+
+.help-modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #e0e0e0;
+}
+
+.help-close-btn {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.help-close-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* タブ */
+.help-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 8px 20px 0;
+  border-bottom: 1px solid #333;
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.help-tab {
+  padding: 8px 14px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #888;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.help-tab:hover {
+  color: #bbb;
+}
+
+.help-tab.active {
+  color: #4a8aba;
+  border-bottom-color: #4a8aba;
+}
+
+/* コンテンツ */
+.help-content {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+.help-content h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  color: #4a8aba;
+}
+
+.help-content p {
+  margin: 0 0 8px;
+  color: #bbb;
+}
+
+.help-content ul {
+  margin: 0 0 12px;
+  padding-left: 20px;
+}
+
+.help-content li {
+  margin-bottom: 6px;
+}
+
+.help-content li strong {
+  color: #e0e0e0;
+}
+
+/* ショートカットテーブル */
+.help-shortcut-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+.help-shortcut-table th,
+.help-shortcut-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #2a2a4a;
+}
+
+.help-shortcut-table th {
+  color: #4a8aba;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.help-shortcut-table td:first-child {
+  white-space: nowrap;
+}
+
+.help-kbd {
+  display: inline-block;
+  padding: 2px 7px;
+  background: #2a2a4a;
+  border: 1px solid #444;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: monospace;
+  color: #e0e0e0;
+  line-height: 1.4;
+}
+
+/* ヘッダーの「?」ボタン */
+.header-btn-help {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #4a8aba;
+  background: #2a3a5a;
+  color: #4a8aba;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.header-btn-help:hover {
+  background: #4a8aba;
+  color: #fff;
+}
