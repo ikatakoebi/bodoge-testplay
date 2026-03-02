@@ -319,9 +319,25 @@ export const CardComponent = memo(function CardComponent({ instance, definition,
   );
 }, arePropsEqual);
 
+// カード名→ASCIIファイル名マッピング（起動時にロード）
+let cardImageMap: Record<string, string> | null = null;
+let mapLoadPromise: Promise<void> | null = null;
+function loadCardImageMap() {
+  if (!mapLoadPromise) {
+    mapLoadPromise = fetch('/card-images/_mapping.json')
+      .then((r) => r.json())
+      .then((m) => { cardImageMap = m; })
+      .catch(() => { cardImageMap = {}; });
+  }
+  return mapLoadPromise;
+}
+loadCardImageMap();
+
 function CardAutoIllust({ name }: { name: string }) {
   if (!name) return null;
-  const src = `/card-images/${encodeURIComponent(name)}.png`;
+  const file = cardImageMap?.[name];
+  if (!file) return null;
+  const src = `/card-images/${file}`;
   return (
     <img
       src={src}
