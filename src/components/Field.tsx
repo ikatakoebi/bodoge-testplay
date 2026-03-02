@@ -594,11 +594,13 @@ export function Field() {
           })}
 
           {Object.values(cardStacks).map((stack) => {
-            // スタックのトップカードのテンプレートを使用
+            // スタック内カード or homeStackIdが一致するカードからテンプレートを特定
             const topId = stack.cardInstanceIds[0];
             const topCard = topId ? cardInstances[topId] : null;
-            const topDef = topCard ? defMap.get(topCard.definitionId) : null;
-            const tmpl = resolveTemplate(cardTemplates, topDef?.template as string | undefined);
+            const refCard = topCard
+              || Object.values(cardInstances).find((c) => c.homeStackId === stack.stackId);
+            const refDef = refCard ? defMap.get(refCard.definitionId) : null;
+            const tmpl = resolveTemplate(cardTemplates, refDef?.template as string | undefined);
             return (
               <CardStackComponent
                 key={stack.stackId}
