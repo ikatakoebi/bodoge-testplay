@@ -28,7 +28,11 @@ export function useSync() {
         state.counters !== prevState.counters ||
         state.areas !== prevState.areas ||
         state.cardDefinitions !== prevState.cardDefinitions ||
-        state.players !== prevState.players
+        state.players !== prevState.players ||
+        state.memos !== prevState.memos ||
+        state.images !== prevState.images ||
+        state.tokens !== prevState.tokens ||
+        state.boardImages !== prevState.boardImages
       ) {
         sync.sendFullState({
           cardInstances: state.cardInstances,
@@ -39,6 +43,11 @@ export function useSync() {
           counters: state.counters,
           players: state.players,
           logs: state.logs,
+          // メモ・画像・トークン・ボード画像も同期
+          memos: state.memos,
+          images: state.images,
+          tokens: state.tokens,
+          boardImages: state.boardImages,
         });
       }
     });

@@ -36,11 +36,11 @@ export function SetupPanel() {
   const counterDefs = useGameStore((s) => s.counterDefs);
   const areas = useGameStore((s) => s.areas);
   const addLog = useGameStore((s) => s.addLog);
-  // オンライン時はルーム人数を使う
+  // プレイ人数は常に手動選択（テスト時に1人でも多人数セットアップ可能）
   const roomPlayerCount = useSyncStore((s) => s.players.length);
   const isOnline = useSyncStore((s) => !!s.roomId);
   const [localPlayerCount, setLocalPlayerCount] = useState(2);
-  const playerCount = isOnline && roomPlayerCount > 0 ? roomPlayerCount : localPlayerCount;
+  const playerCount = localPlayerCount;
 
   const storeSetupText = useGameStore((s) => s.setupText);
   const setStoreSetupText = useGameStore((s) => s.setSetupText);
@@ -130,12 +130,12 @@ export function SetupPanel() {
       <div className="setup-row">
         <label>プレイ人数:{isOnline && ` (ルーム: ${roomPlayerCount}人)`}</label>
         <div className="player-count-btns">
-          {[2, 3, 4, 5].map((n) => (
+          {/* 1〜5人まで常に選択可能（テスト時に1人でも多人数セットアップ可能） */}
+          {[1, 2, 3, 4, 5].map((n) => (
             <button
               key={n}
               className={`player-btn ${playerCount === n ? 'active' : ''}`}
               onClick={() => setLocalPlayerCount(n)}
-              disabled={isOnline}
             >
               {n}人
             </button>

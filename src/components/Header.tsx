@@ -11,6 +11,7 @@ import { parseCsvToCards } from '../utils/csv';
 import { parseSetupCsv } from '../utils/setupCsv';
 import { stringify as stringifyYaml } from 'yaml';
 import { clearSoloState } from '../store/syncBridge';
+import { useSyncStore } from '../store/syncStore';
 import './Header.css';
 import './HelpModal.css';
 
@@ -44,6 +45,11 @@ export function Header() {
   const images = useGameStore((s) => s.images);
   const tokens = useGameStore((s) => s.tokens);
   const addCounter = useGameStore((s) => s.addCounter);
+
+  // Socket.io 接続状態
+  const socketExists = useSyncStore((s) => s.socket !== null);
+  const connected = useSyncStore((s) => s.connected);
+  const roomId = useSyncStore((s) => s.roomId);
 
   const cardCount = Object.keys(cardInstances).length;
   const stackCount = Object.keys(cardStacks).length;
@@ -237,6 +243,16 @@ export function Header() {
         <button className="header-btn-help" onClick={toggleHelp} title="使い方ガイド">
           ?
         </button>
+        {/* Socket.io 接続ステータスインジケータ */}
+        {socketExists && (
+          <span
+            className={`header-connection-status ${connected ? 'connected' : 'disconnected'}`}
+            title={connected ? `接続中${roomId ? ` (Room: ${roomId})` : ''}` : '切断'}
+          >
+            <span className="header-connection-dot" />
+            {connected ? '接続中' : '切断'}
+          </span>
+        )}
         {infoParts.length > 0 && (
           <span className="header-info">{infoParts.join(' / ')}</span>
         )}

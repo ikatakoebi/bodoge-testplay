@@ -35,10 +35,9 @@ interface SetupResult {
   logs: string[];
 }
 
-let instanceCounter = 0;
-
+// ID衝突を防ぐため crypto.randomUUID() を使用
 function generateInstanceId(): string {
-  return `setup_card_${++instanceCounter}_${Date.now()}`;
+  return `card_${crypto.randomUUID()}`;
 }
 
 function resolveCount(count: number | Record<string, number> | undefined, playerCount: number): number {
@@ -80,7 +79,6 @@ export function executeSetup(
   const colStep = Math.ceil((cardSize.width + 8) / cellSize) * cellSize;
   const rowStep = Math.ceil((cardSize.height + 8) / cellSize) * cellSize;
   const setupCounters: Record<string, Counter> = {};
-  let counterIdx = 0;
 
   // 全カードをインスタンス化（展開済み）
   const allCards: { def: CardDefinition; instanceId: string }[] = [];
@@ -168,7 +166,7 @@ export function executeSetup(
         if (action.perPlayer) {
           const toArea = action.to ? areaMap.get(action.to) : null;
           for (let p = 0; p < config.playerCount; p++) {
-            const cid = `setup_counter_${++counterIdx}_${Date.now()}`;
+            const cid = `counter_${crypto.randomUUID()}`;
             const baseX = toArea ? toArea.x * cellSize + p * toArea.width * cellSize : cellSize + p * 150;
             const baseY = toArea ? (toArea.y + toArea.height) * cellSize - 40 : cellSize;
             setupCounters[cid] = {
@@ -179,7 +177,7 @@ export function executeSetup(
           }
           logs.push(`各プレイヤーに${counterName}を配布`);
         } else {
-          const cid = `setup_counter_${++counterIdx}_${Date.now()}`;
+          const cid = `counter_${crypto.randomUUID()}`;
           setupCounters[cid] = {
             counterId: cid, name: counterName,
             value: defaultVal, min: counterDef?.min ?? -999, max: counterDef?.max ?? 999,
@@ -219,7 +217,7 @@ export function executeSetup(
 
     // hiddenエリアのカードはスタック（山札）にまとめる
     if (area && area.visibility === 'hidden' && cards.length > 1) {
-      const stackId = `setup_stack_${actualAreaId}_${Date.now()}`;
+      const stackId = `stack_${actualAreaId}_${crypto.randomUUID()}`;
       const baseX = area.x * cellSize;
       const baseY = area.y * cellSize;
 
@@ -303,7 +301,7 @@ export function executeSetup(
     for (const def of config.counterDefs) {
       if (!def.perPlayer) continue;
       for (let p = 0; p < config.playerCount; p++) {
-        const cid = `setup_counter_${++counterIdx}_${Date.now()}_${p}`;
+        const cid = `counter_${crypto.randomUUID()}`;
         if (setupCounters[cid]) continue; // giveアクションで既に生成済み
         setupCounters[cid] = {
           counterId: cid, name: `P${p + 1} ${def.name}`,

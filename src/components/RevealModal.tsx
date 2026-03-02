@@ -121,7 +121,7 @@ function RevealModalInner({ stackId, initialCardIds }: { stackId: string; initia
           {revealedIds.length === 0 ? (
             <div className="reveal-empty-message">山札にカードがありません</div>
           ) : (
-            revealedIds.map((id) => {
+            revealedIds.map((id, index) => {
               const card = cardInstances[id];
               if (!card) return null;
               const def = defMap.get(card.definitionId);
@@ -134,6 +134,7 @@ function RevealModalInner({ stackId, initialCardIds }: { stackId: string; initia
                   definition={def}
                   template={tmpl}
                   onClick={handleTakeCard}
+                  order={index + 1}
                 />
               );
             })
@@ -151,11 +152,12 @@ function RevealModalInner({ stackId, initialCardIds }: { stackId: string; initia
 }
 
 /** モーダル内の公開カード1枚 */
-function RevealCard({ instanceId, definition, template, onClick }: {
+function RevealCard({ instanceId, definition, template, onClick, order }: {
   instanceId: string;
   definition: CardDefinition;
   template: CardTemplate;
   onClick: (id: string) => void;
+  order: number; // 山札の上からの順番（1始まり）
 }) {
   const size = getCardSize(template);
   // モーダル内ではカードを少し縮小して表示
@@ -178,6 +180,8 @@ function RevealCard({ instanceId, definition, template, onClick }: {
       }}
       onClick={() => onClick(instanceId)}
     >
+      {/* 山札の上からの順番バッジ */}
+      <span className="reveal-card-order-badge">#{order}</span>
       <div
         className="reveal-card-body"
         style={{ backgroundColor: (definition.color as string) || '#fff' }}

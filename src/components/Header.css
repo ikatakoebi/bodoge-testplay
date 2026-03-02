@@ -108,6 +108,44 @@
 }
 
 
+/* Socket.io 接続ステータスインジケータ */
+.header-connection-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  user-select: none;
+}
+
+.header-connection-status.connected {
+  color: #6edb8a;
+  background: rgba(46, 204, 113, 0.12);
+}
+
+.header-connection-status.disconnected {
+  color: #e87070;
+  background: rgba(231, 76, 60, 0.12);
+}
+
+.header-connection-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.header-connection-status.connected .header-connection-dot {
+  background: #2ecc71;
+  box-shadow: 0 0 6px rgba(46, 204, 113, 0.6);
+}
+
+.header-connection-status.disconnected .header-connection-dot {
+  background: #e74c3c;
+  box-shadow: 0 0 6px rgba(231, 76, 60, 0.6);
+}
+
 .sheets-import-wrapper {
   position: relative;
 }

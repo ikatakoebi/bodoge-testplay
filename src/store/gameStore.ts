@@ -65,6 +65,7 @@ const SAVE_DATA_PREFIX = 'bodoge_save_';
 interface GameState {
   // マスターデータ
   cardDefinitions: CardDefinition[];
+  cardDefinitionMap: Map<string, CardDefinition>; // cardDefinitions のキャッシュ（id → definition）
   cardTemplates: Record<string, CardTemplate>;
   counterDefs: CounterDef[];
 
@@ -211,6 +212,7 @@ interface GameState {
 
 export const useGameStore = create<GameState>((set, get) => ({
   cardDefinitions: [],
+  cardDefinitionMap: new Map(),
   cardTemplates: { default: DEFAULT_TEMPLATE },
   counterDefs: [],
   players: [{ playerId: 'p0', name: 'P1', color: '#e74c3c' }],
@@ -229,7 +231,10 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   setPlayers: (players) => set({ players }),
   setCurrentPlayer: (playerId) => set({ currentPlayerId: playerId }),
-  setCardDefinitions: (defs) => set({ cardDefinitions: defs }),
+  setCardDefinitions: (defs) => set({
+    cardDefinitions: defs,
+    cardDefinitionMap: new Map(defs.map((d) => [d.id, d])),
+  }),
   setCardTemplates: (templates) => set({ cardTemplates: templates }),
   setCardTemplate: (name, template) => set((state) => ({
     cardTemplates: { ...state.cardTemplates, [name]: template },
@@ -1046,9 +1051,8 @@ export const useGameStore = create<GameState>((set, get) => ({
 
     if (cardsInArea.length === 0) return;
 
-    // 先頭カードのテンプレートでグリッドステップを算出
-    const dMap = new Map(state.cardDefinitions.map((d) => [d.id, d]));
-    const firstDef = dMap.get(cardsInArea[0].definitionId);
+    // 先頭カードのテンプレートでグリッドステップを算出（キャッシュ済みMapを使用）
+    const firstDef = state.cardDefinitionMap.get(cardsInArea[0].definitionId);
     const tmpl = resolveTemplate(state.cardTemplates, firstDef?.template as string | undefined);
     const cardSize = getCardSize(tmpl);
 
@@ -1215,6 +1219,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (!raw) return false;
     try {
       const data = JSON.parse(raw);
+      const defs: CardDefinition[] = data.cardDefinitions || [];
       set({
         cardInstances: data.cardInstances || {},
         cardStacks: data.cardStacks || {},
@@ -1222,7 +1227,8 @@ export const useGameStore = create<GameState>((set, get) => ({
         players: data.players || [],
         currentPlayerId: data.currentPlayerId || 'p0',
         areas: data.areas || [],
-        cardDefinitions: data.cardDefinitions || [],
+        cardDefinitions: defs,
+        cardDefinitionMap: new Map(defs.map((d) => [d.id, d])),
         cardTemplates: data.cardTemplates || { default: DEFAULT_TEMPLATE },
         memos: data.memos || {},
         images: data.images || {},

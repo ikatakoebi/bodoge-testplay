@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { io, Socket } from 'socket.io-client';
+import { useUIStore } from './uiStore';
 
 const SESSION_KEY = 'bodogeSession';
 
@@ -146,7 +147,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
           resolve({ playerId: res.playerId });
         } else {
           clearSession();
-          if (!silent) alert(res.error || '参加に失敗しました');
+          if (!silent) useUIStore.getState().addToast(res.error || '参加に失敗しました', 'error');
           resolve(null);
         }
       });

@@ -19,7 +19,7 @@ export function CsvUpload() {
 
       const newDefs = parseCsvToCards(text);
       if (newDefs.length === 0) {
-        alert('CSVにカードデータが見つかりません');
+        useUIStore.getState().addToast('CSVにカードデータが見つかりません', 'error');
         return;
       }
 

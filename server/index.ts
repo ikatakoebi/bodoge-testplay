@@ -39,6 +39,14 @@ interface RoomState {
 
 const rooms = new Map<string, RoomState>();
 
+// === Google Sheets レスポンスキャッシュ (TTL: 5分) ===
+interface SheetCacheEntry {
+  data: Record<string, string | null>;
+  timestamp: number;
+}
+const SHEET_CACHE_TTL = 5 * 60 * 1000; // 5分
+const sheetCache = new Map<string, SheetCacheEntry>();
+
 function generateRoomId(): string {
   return crypto.randomBytes(3).toString('hex').toUpperCase();
 }
@@ -164,12 +172,20 @@ app.get('/health', (_req, res) => {
   res.json({ ok: true, rooms: rooms.size });
 });
 
-// Google Sheetsからゲームデータを取得するプロキシ
+// Google Sheetsからゲームデータを取得するプロキシ（メモリキャッシュ付き）
 // シートを「リンクを知っている全員が閲覧可」にする必要あり
 app.get('/api/sheets', async (req, res) => {
   const id = req.query.id as string;
   if (!id || !/^[A-Za-z0-9_-]{20,}$/.test(id)) {
     res.status(400).json({ error: 'Invalid spreadsheet ID' });
+    return;
+  }
+
+  // キャッシュチェック
+  const cached = sheetCache.get(id);
+  if (cached && Date.now() - cached.timestamp < SHEET_CACHE_TTL) {
+    console.log(`[sheets] キャッシュヒット: ${id}`);
+    res.json(cached.data);
     return;
   }
 
@@ -198,10 +214,31 @@ app.get('/api/sheets', async (req, res) => {
         }
       })
     );
+
+    // キャッシュに保存
+    sheetCache.set(id, { data: results, timestamp: Date.now() });
+    console.log(`[sheets] キャッシュ保存: ${id}`);
+
     res.json(results);
   } catch (err) {
     console.error('[sheets] fetch error', err);
     res.status(500).json({ error: 'Failed to fetch sheets' });
+  }
+});
+
+// 手動キャッシュリフレッシュ用エンドポイント
+app.post('/api/sheets/refresh', (req, res) => {
+  const id = req.query.id as string;
+  if (id) {
+    // 特定のスプレッドシートのキャッシュを無効化
+    sheetCache.delete(id);
+    console.log(`[sheets] キャッシュ無効化: ${id}`);
+    res.json({ ok: true, message: `Cache cleared for ${id}` });
+  } else {
+    // 全キャッシュをクリア
+    sheetCache.clear();
+    console.log('[sheets] 全キャッシュクリア');
+    res.json({ ok: true, message: 'All sheet cache cleared' });
   }
 });
 

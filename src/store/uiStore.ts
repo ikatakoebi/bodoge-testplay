@@ -140,11 +140,13 @@ export const useUIStore = create<UIState>((set) => ({
   toggleGodView: () => set((s) => ({ godView: !s.godView })),
 
   addToast: (text, type = 'info') => {
-    const id = `toast_${Date.now()}`;
+    const id = `toast_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     set((s) => ({ toasts: [...s.toasts, { id, text, type }] }));
+    // エラーは5秒、それ以外は3秒で自動消去
+    const duration = type === 'error' ? 5000 : 3000;
     setTimeout(() => {
       set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }));
-    }, 3500);
+    }, duration);
   },
   removeToast: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
   setSnapGuides: (guides) => set({ snapGuides: guides }),

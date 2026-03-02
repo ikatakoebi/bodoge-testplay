@@ -21,6 +21,7 @@ export function Sidebar() {
   const addLog = useGameStore((s) => s.addLog);
 
   const cardTemplates = useGameStore((s) => s.cardTemplates);
+  const selectedCardIds = useUIStore((s) => s.selectedCardIds);
   const addToast = useUIStore((s) => s.addToast);
 
   const handleCopyAreasCsv = () => {
@@ -54,6 +55,12 @@ export function Sidebar() {
 
   return (
     <aside className="sidebar">
+      {/* 選択中カード枚数表示 */}
+      {selectedCardIds.length > 0 && (
+        <div className="sidebar-selection-banner">
+          選択中: {selectedCardIds.length}枚
+        </div>
+      )}
       <SetupPanel />
 
       <div className="sidebar-section">

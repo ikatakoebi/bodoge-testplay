@@ -8,6 +8,18 @@
   flex-shrink: 0;
 }
 
+/* 選択中カード枚数バナー */
+.sidebar-selection-banner {
+  padding: 8px 12px;
+  background: rgba(100, 180, 255, 0.15);
+  border-bottom: 1px solid rgba(100, 180, 255, 0.3);
+  color: #8bc4ff;
+  font-size: 13px;
+  font-weight: bold;
+  text-align: center;
+  flex-shrink: 0;
+}
+
 .sidebar-section {
   padding: 12px;
   border-bottom: 1px solid #2a2a3e;

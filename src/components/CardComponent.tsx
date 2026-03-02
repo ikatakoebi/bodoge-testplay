@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect, memo } from 'react';
 import type { CardInstance, CardDefinition, CardTemplate, CardTemplateField } from '../types';
 import { getCardSize, resolveTemplate } from '../utils/cardTemplate';
 import { useGameStore } from '../store/gameStore';
@@ -13,7 +13,27 @@ interface Props {
   onDragEnd?: (instanceId: string) => void;
 }
 
-export function CardComponent({ instance, definition, template, onDragEnd }: Props) {
+// React.memo の比較関数: 再レンダリングが必要なプロパティのみ比較
+function arePropsEqual(prev: Props, next: Props): boolean {
+  const pi = prev.instance;
+  const ni = next.instance;
+  return (
+    pi.x === ni.x &&
+    pi.y === ni.y &&
+    pi.zIndex === ni.zIndex &&
+    pi.face === ni.face &&
+    pi.visibility === ni.visibility &&
+    pi.rotation === ni.rotation &&
+    pi.ownerId === ni.ownerId &&
+    pi.stackId === ni.stackId &&
+    pi.locked === ni.locked &&
+    prev.definition === next.definition &&
+    prev.template === next.template &&
+    prev.onDragEnd === next.onDragEnd
+  );
+}
+
+export const CardComponent = memo(function CardComponent({ instance, definition, template, onDragEnd }: Props) {
   const moveCard = useGameStore((s) => s.moveCard);
   const moveCardsTo = useGameStore((s) => s.moveCardsTo);
   const bringToFront = useGameStore((s) => s.bringToFront);
@@ -26,6 +46,17 @@ export function CardComponent({ instance, definition, template, onDragEnd }: Pro
   const size = getCardSize(template);
   const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
   const multiDragRef = useRef<Record<string, { origX: number; origY: number }> | null>(null);
+  const rafIdRef = useRef<number | null>(null); // rAF スロットリング用
+
+  // コンポーネントアンマウント時に保留中の rAF をキャンセル
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+    };
+  }, []);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (e.button === 2) return;
@@ -62,76 +93,95 @@ export function CardComponent({ instance, definition, template, onDragEnd }: Pro
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!dragRef.current) return;
-    const { zoom, gridEnabled: ge, cellSize: cs, setSnapGuides } = useUIStore.getState();
-    const dx = (e.clientX - dragRef.current.startX) / zoom;
-    const dy = (e.clientY - dragRef.current.startY) / zoom;
-    let newX = dragRef.current.origX + dx;
-    let newY = dragRef.current.origY + dy;
 
-    if (ge) {
-      newX = Math.round(newX / cs) * cs;
-      newY = Math.round(newY / cs) * cs;
-    }
+    // rAF スロットリング: 毎フレーム1回のみ状態更新
+    if (rafIdRef.current !== null) return;
 
-    // スナップガイド検出（単体ドラッグ時のみ）
-    if (!multiDragRef.current) {
-      const SNAP_THRESHOLD = 6;
-      const guides: { type: 'h' | 'v'; pos: number }[] = [];
-      const state = useGameStore.getState();
-      const myEdges = { l: newX, r: newX + size.width, cx: newX + size.width / 2, t: newY, b: newY + size.height, cy: newY + size.height / 2 };
-      const dMap = new Map(state.cardDefinitions.map((d) => [d.id, d]));
+    // PointerEvent のプロパティを先に取得（SyntheticEvent は再利用されるため）
+    const clientX = e.clientX;
+    const clientY = e.clientY;
 
-      for (const other of Object.values(state.cardInstances)) {
-        if (other.instanceId === instance.instanceId || other.stackId) continue;
-        const oDef = dMap.get(other.definitionId);
-        const oTmpl = resolveTemplate(state.cardTemplates, oDef?.template as string | undefined);
-        const cardSize = getCardSize(oTmpl);
-        const oEdges = { l: other.x, r: other.x + cardSize.width, cx: other.x + cardSize.width / 2, t: other.y, b: other.y + cardSize.height, cy: other.y + cardSize.height / 2 };
+    rafIdRef.current = requestAnimationFrame(() => {
+      rafIdRef.current = null;
+      if (!dragRef.current) return;
 
-        // vertical snap (x-axis alignment)
-        for (const [mKey, oKey] of [['l','l'],['r','r'],['cx','cx'],['l','r'],['r','l']] as const) {
-          const mVal = myEdges[mKey as keyof typeof myEdges];
-          const oVal = oEdges[oKey as keyof typeof oEdges];
-          if (Math.abs(mVal - oVal) < SNAP_THRESHOLD) {
-            const offset = oVal - myEdges[mKey as keyof typeof myEdges];
-            newX += offset;
-            myEdges.l = newX; myEdges.r = newX + size.width; myEdges.cx = newX + size.width / 2;
-            guides.push({ type: 'v', pos: oVal });
-            break;
-          }
-        }
+      const { zoom, gridEnabled: ge, cellSize: cs, setSnapGuides } = useUIStore.getState();
+      const dx = (clientX - dragRef.current.startX) / zoom;
+      const dy = (clientY - dragRef.current.startY) / zoom;
+      let newX = dragRef.current.origX + dx;
+      let newY = dragRef.current.origY + dy;
 
-        // horizontal snap (y-axis alignment)
-        for (const [mKey, oKey] of [['t','t'],['b','b'],['cy','cy'],['t','b'],['b','t']] as const) {
-          const mVal = myEdges[mKey as keyof typeof myEdges];
-          const oVal = oEdges[oKey as keyof typeof oEdges];
-          if (Math.abs(mVal - oVal) < SNAP_THRESHOLD) {
-            const offset = oVal - myEdges[mKey as keyof typeof myEdges];
-            newY += offset;
-            myEdges.t = newY; myEdges.b = newY + size.height; myEdges.cy = newY + size.height / 2;
-            guides.push({ type: 'h', pos: oVal });
-            break;
-          }
-        }
+      if (ge) {
+        newX = Math.round(newX / cs) * cs;
+        newY = Math.round(newY / cs) * cs;
       }
-      setSnapGuides(guides);
-    }
 
-    if (multiDragRef.current) {
-      const snappedDx = newX - dragRef.current.origX;
-      const snappedDy = newY - dragRef.current.origY;
-      const positions = Object.entries(multiDragRef.current).map(([id, orig]) => ({
-        id,
-        x: orig.origX + snappedDx,
-        y: orig.origY + snappedDy,
-      }));
-      moveCardsTo(positions);
-    } else {
-      moveCard(instance.instanceId, newX, newY);
-    }
+      // スナップガイド検出（単体ドラッグ時のみ）
+      if (!multiDragRef.current) {
+        const SNAP_THRESHOLD = 6;
+        const guides: { type: 'h' | 'v'; pos: number }[] = [];
+        const state = useGameStore.getState();
+        const myEdges = { l: newX, r: newX + size.width, cx: newX + size.width / 2, t: newY, b: newY + size.height, cy: newY + size.height / 2 };
+        // cardDefinitionMap キャッシュを使用
+        const dMap = state.cardDefinitionMap;
+
+        for (const other of Object.values(state.cardInstances)) {
+          if (other.instanceId === instance.instanceId || other.stackId) continue;
+          const oDef = dMap.get(other.definitionId);
+          const oTmpl = resolveTemplate(state.cardTemplates, oDef?.template as string | undefined);
+          const cardSize = getCardSize(oTmpl);
+          const oEdges = { l: other.x, r: other.x + cardSize.width, cx: other.x + cardSize.width / 2, t: other.y, b: other.y + cardSize.height, cy: other.y + cardSize.height / 2 };
+
+          // vertical snap (x-axis alignment)
+          for (const [mKey, oKey] of [['l','l'],['r','r'],['cx','cx'],['l','r'],['r','l']] as const) {
+            const mVal = myEdges[mKey as keyof typeof myEdges];
+            const oVal = oEdges[oKey as keyof typeof oEdges];
+            if (Math.abs(mVal - oVal) < SNAP_THRESHOLD) {
+              const offset = oVal - myEdges[mKey as keyof typeof myEdges];
+              newX += offset;
+              myEdges.l = newX; myEdges.r = newX + size.width; myEdges.cx = newX + size.width / 2;
+              guides.push({ type: 'v', pos: oVal });
+              break;
+            }
+          }
+
+          // horizontal snap (y-axis alignment)
+          for (const [mKey, oKey] of [['t','t'],['b','b'],['cy','cy'],['t','b'],['b','t']] as const) {
+            const mVal = myEdges[mKey as keyof typeof myEdges];
+            const oVal = oEdges[oKey as keyof typeof oEdges];
+            if (Math.abs(mVal - oVal) < SNAP_THRESHOLD) {
+              const offset = oVal - myEdges[mKey as keyof typeof myEdges];
+              newY += offset;
+              myEdges.t = newY; myEdges.b = newY + size.height; myEdges.cy = newY + size.height / 2;
+              guides.push({ type: 'h', pos: oVal });
+              break;
+            }
+          }
+        }
+        setSnapGuides(guides);
+      }
+
+      if (multiDragRef.current) {
+        const snappedDx = newX - dragRef.current.origX;
+        const snappedDy = newY - dragRef.current.origY;
+        const positions = Object.entries(multiDragRef.current).map(([id, orig]) => ({
+          id,
+          x: orig.origX + snappedDx,
+          y: orig.origY + snappedDy,
+        }));
+        moveCardsTo(positions);
+      } else {
+        moveCard(instance.instanceId, newX, newY);
+      }
+    });
   }, [instance.instanceId, size.width, size.height, moveCard, moveCardsTo]);
 
   const handlePointerUp = useCallback((e: React.PointerEvent) => {
+    // 保留中の rAF をキャンセル
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
     if (dragRef.current) {
       const dx = e.clientX - dragRef.current.startX;
       const dy = e.clientY - dragRef.current.startY;
@@ -159,7 +209,8 @@ export function CardComponent({ instance, definition, template, onDragEnd }: Pro
         const cs = uiState.cellSize;
         const card = gameState.cardInstances[instance.instanceId];
         if (card) {
-          const dMap = new Map(gameState.cardDefinitions.map((d) => [d.id, d]));
+          // cardDefinitionMap キャッシュを使用
+          const dMap = gameState.cardDefinitionMap;
           const cDef = dMap.get(card.definitionId);
           const cTmpl = resolveTemplate(gameState.cardTemplates, cDef?.template as string | undefined);
           const cardSize = getCardSize(cTmpl);
@@ -266,7 +317,7 @@ export function CardComponent({ instance, definition, template, onDragEnd }: Pro
       )}
     </div>
   );
-}
+}, arePropsEqual);
 
 function CardAutoIllust({ name }: { name: string }) {
   if (!name) return null;
