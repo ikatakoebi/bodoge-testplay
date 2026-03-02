@@ -34,7 +34,7 @@ export function ContextMenu() {
   const saveSnapshot = useGameStore((s) => s.saveSnapshot);
   const setAreaDrawMode = useUIStore((s) => s.setAreaDrawMode);
   const rotateCards = useGameStore((s) => s.rotateCards);
-  const addImage = useGameStore((s) => s.addImage);
+  const importImageAsCard = useGameStore((s) => s.importImageAsCard);
   const removeImage = useGameStore((s) => s.removeImage);
   const toggleLockImage = useGameStore((s) => s.toggleLockImage);
   const removeMemo = useGameStore((s) => s.removeMemo);
@@ -566,15 +566,20 @@ export function ContextMenu() {
             input.onchange = () => {
               const file = input.files?.[0];
               if (!file) return;
-              const url = URL.createObjectURL(file);
-              const img = new Image();
-              img.onload = () => {
-                const maxW = 300;
-                const scale = img.width > maxW ? maxW / img.width : 1;
-                addImage(url, fieldX, fieldY, img.width * scale, img.height * scale);
-                addLog(`画像を配置した: ${file.name}`);
+              const reader = new FileReader();
+              reader.onload = () => {
+                const dataUrl = reader.result as string;
+                const img = new Image();
+                img.onload = () => {
+                  const maxW = 300;
+                  const scale = img.width > maxW ? maxW / img.width : 1;
+                  saveSnapshot();
+                  importImageAsCard(dataUrl, fieldX, fieldY, img.width * scale, img.height * scale);
+                  addLog(`画像をカードとして配置した: ${file.name}`);
+                };
+                img.src = dataUrl;
               };
-              img.src = url;
+              reader.readAsDataURL(file);
             };
             input.click();
             hideContextMenu();

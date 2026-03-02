@@ -337,7 +337,7 @@ function CardAutoIllust({ name }: { name: string }) {
 }
 
 function isImageUrl(value: string): boolean {
-  if (/^(https?:\/\/|data:image\/)/.test(value)) return true;
+  if (/^(https?:\/\/|data:image\/|blob:)/.test(value)) return true;
   if (/\.(png|jpe?g|gif|svg|webp|bmp)(\?.*)?$/i.test(value)) return true;
   return false;
 }

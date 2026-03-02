@@ -205,18 +205,23 @@ export function Field() {
       setIsDragOver(false);
       const files = e.dataTransfer?.files;
       if (!files || files.length === 0) return;
+      const fp = screenToField(e.clientX, e.clientY, el);
       for (const file of Array.from(files)) {
         if (!file.type.startsWith('image/')) continue;
-        const url = URL.createObjectURL(file);
-        const fp = screenToField(e.clientX, e.clientY, el);
-        const img = new Image();
-        img.onload = () => {
-          const maxW = 300;
-          const scale = img.width > maxW ? maxW / img.width : 1;
-          importImageAsCard(url, fp.x, fp.y, img.width * scale, img.height * scale);
-          addLog(`画像をカードとして配置した: ${file.name}`);
+        // data:URLに変換して永続化（blob:URLはリロードで消える）
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = reader.result as string;
+          const img = new Image();
+          img.onload = () => {
+            const maxW = 300;
+            const scale = img.width > maxW ? maxW / img.width : 1;
+            importImageAsCard(dataUrl, fp.x, fp.y, img.width * scale, img.height * scale);
+            addLog(`画像をカードとして配置した: ${file.name}`);
+          };
+          img.src = dataUrl;
         };
-        img.src = url;
+        reader.readAsDataURL(file);
       }
     };
     el.addEventListener('dragover', handleDragOver);
