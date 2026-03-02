@@ -14,6 +14,7 @@ export interface SetupAction {
   count?: number | Record<string, number>; // 枚数 or 人数別枚数
   perPlayer?: boolean;
   faceUp?: boolean;
+  faceDown?: boolean;     // perPlayer時に全員から伏せ（ownerにも見えない）
   filter?: { tag?: string; minPlayers?: number };
   when?: string;          // "players < 5" 等の条件
 }
@@ -133,7 +134,12 @@ export function executeSetup(
         if (action.perPlayer) {
           for (let p = 0; p < config.playerCount; p++) {
             const playerId = players[p]?.playerId || null;
-            const dealt = dealPool.splice(0, count).map((c) => ({ ...c, faceUp: action.faceUp, ownerId: playerId ?? undefined }));
+            const dealt = dealPool.splice(0, count).map((c) => ({
+              ...c,
+              faceUp: action.faceUp,
+              faceDown: action.faceDown,
+              ownerId: action.faceDown ? undefined : (playerId ?? undefined),
+            }));
             const key = `${toKey}_p${p}`;
             areaCards[key] = [...(areaCards[key] || []), ...dealt];
           }
@@ -276,8 +282,8 @@ export function executeSetup(
         x: baseX + (i % maxCols) * colStep,
         y: baseY + Math.floor(i / maxCols) * rowStep,
         zIndex: zIndex++,
-        face: hasOwner ? 'up' : (isFaceUp ? 'up' : 'down'),
-        visibility: hasOwner ? 'owner' : (isFaceUp ? 'public' : 'hidden'),
+        face: (hasOwner || isFaceUp) ? 'up' : 'down',
+        visibility: isFaceUp ? 'public' : (hasOwner ? 'owner' : 'hidden'),
         ownerId: card.ownerId || null,
         stackId: null,
         homeStackId: null,

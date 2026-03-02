@@ -29,6 +29,7 @@ export function parseSetupCsv(csvText: string): SetupAction[] {
 
     if (row['perPlayer']?.trim().toLowerCase() === 'true') entry.perPlayer = true;
     if (row['faceUp']?.trim().toLowerCase() === 'true') entry.faceUp = true;
+    if (row['faceDown']?.trim().toLowerCase() === 'true') entry.faceDown = true;
 
     return [entry];
   });
