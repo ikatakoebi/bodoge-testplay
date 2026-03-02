@@ -247,7 +247,7 @@ if (existsSync(distPath)) {
   // 日本語ファイル名対応: デコード済みパスでファイルを探す
   app.use(express.static(distPath, { fallthrough: true }));
   // APIや静的ファイルにマッチしないリクエストのみ index.html を返す（SPA用）
-  app.get('*', (req, res, next) => {
+  app.use((req, res, next) => {
     // 静的ファイル拡張子の場合は404（index.htmlを返さない）
     if (/\.\w+$/.test(req.path)) {
       return next();

@@ -1,4 +1,5 @@
 import { useRef, useCallback, useEffect, memo } from 'react';
+import cardImageMapping from '../data/cardImageMapping.json';
 import type { CardInstance, CardDefinition, CardTemplate, CardTemplateField } from '../types';
 import { getCardSize, resolveTemplate } from '../utils/cardTemplate';
 import { useGameStore } from '../store/gameStore';
@@ -319,23 +320,9 @@ export const CardComponent = memo(function CardComponent({ instance, definition,
   );
 }, arePropsEqual);
 
-// カード名→ASCIIファイル名マッピング（起動時にロード）
-let cardImageMap: Record<string, string> | null = null;
-let mapLoadPromise: Promise<void> | null = null;
-function loadCardImageMap() {
-  if (!mapLoadPromise) {
-    mapLoadPromise = fetch('/card-images/_mapping.json')
-      .then((r) => r.json())
-      .then((m) => { cardImageMap = m; })
-      .catch(() => { cardImageMap = {}; });
-  }
-  return mapLoadPromise;
-}
-loadCardImageMap();
-
 function CardAutoIllust({ name }: { name: string }) {
   if (!name) return null;
-  const file = cardImageMap?.[name];
+  const file = (cardImageMapping as Record<string, string>)[name];
   if (!file) return null;
   const src = `/card-images/${file}`;
   return (
