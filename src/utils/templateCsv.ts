@@ -76,10 +76,13 @@ export function parseCsvToTemplates(csvText: string): Record<string, CardTemplat
       // textColor: textColor列 or color列（スプレッドシート形式）
       const textColor = row.textColor?.trim() || row.color?.trim() || undefined;
 
+      const fontSizeField = row.fontSizeField?.trim() || row.fontsizefield?.trim() || undefined;
+
       const field: CardTemplateField = {
         field: fieldName,
         position,
         fontSize,
+        fontSizeField,
         bold,
         italic,
         shape: (row.shape || undefined) as CardTemplateField['shape'],
@@ -105,7 +108,7 @@ export function templatesToCSV(templates: Record<string, CardTemplate>): string 
     'template', 'size', 'size_width', 'size_height',
     'back_color', 'back_text', 'back_image',
     'border_color', 'border_radius', 'border_color_field',
-    'field', 'position', 'fontSize', 'bold', 'italic', 'shape', 'bgColor', 'height',
+    'field', 'position', 'fontSize', 'fontSizeField', 'bold', 'italic', 'shape', 'bgColor', 'height',
   ];
 
   const rows: string[] = [headers.join(',')];
@@ -126,7 +129,7 @@ export function templatesToCSV(templates: Record<string, CardTemplate>): string 
 
     if (tmpl.layout.length === 0) {
       // レイアウトなしのテンプレ（設定行のみ）
-      rows.push([...settingCols, '', '', '', '', '', '', '', ''].join(','));
+      rows.push([...settingCols, '', '', '', '', '', '', '', '', ''].join(','));
     } else {
       tmpl.layout.forEach((f, i) => {
         const prefix = i === 0 ? settingCols : [name, '', '', '', '', '', '', '', '', ''];
@@ -134,6 +137,7 @@ export function templatesToCSV(templates: Record<string, CardTemplate>): string 
           f.field,
           f.position,
           f.fontSize ? String(f.fontSize) : '',
+          f.fontSizeField || '',
           f.bold ? 'true' : '',
           f.italic ? 'true' : '',
           f.shape || '',

@@ -4,20 +4,19 @@
 }
 
 .setup-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   margin-bottom: 8px;
 }
 
 .setup-row label {
+  display: block;
   font-size: 12px;
   color: #aaa;
-  white-space: nowrap;
+  margin-bottom: 4px;
 }
 
 .player-count-btns {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
 }
 

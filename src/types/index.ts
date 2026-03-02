@@ -116,6 +116,7 @@ export interface CardTemplateField {
   field: string;
   position: 'top' | 'top-left' | 'top-right' | 'center' | 'center-left' | 'center-right' | 'bottom' | 'bottom-left' | 'bottom-right';
   fontSize?: number;
+  fontSizeField?: string; // カードCSVの列名からfontSizeを取得
   bold?: boolean;
   italic?: boolean;
   shape?: 'circle' | 'square';

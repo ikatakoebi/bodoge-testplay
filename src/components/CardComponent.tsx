@@ -243,9 +243,13 @@ function CardField({ field, definition }: { field: CardTemplateField; definition
   const strVal = String(value);
   const isImg = isImageUrl(strVal);
 
-  const fontSize = field.position === 'bottom'
-    ? Math.max(field.fontSize ?? 13, 13)
+  // fontSizeField指定があればカードCSVの値を優先
+  const baseFontSize = field.fontSizeField && definition[field.fontSizeField] != null
+    ? Number(definition[field.fontSizeField]) || (field.fontSize ?? 12)
     : (field.fontSize ?? 12);
+  const fontSize = field.position === 'bottom'
+    ? Math.max(baseFontSize, 13)
+    : baseFontSize;
 
   return (
     <div
