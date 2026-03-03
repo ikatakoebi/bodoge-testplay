@@ -66,6 +66,7 @@ interface SheetCacheEntry {
   timestamp: number;
 }
 const SHEET_CACHE_TTL = 5 * 60 * 1000; // 5分
+const SHEET_CACHE_MAX = 50; // 最大キャッシュ数
 const sheetCache = new Map<string, SheetCacheEntry>();
 
 function generateRoomId(): string {
@@ -180,11 +181,16 @@ io.on('connection', (socket) => {
     if (room && room.gameState) {
       try {
         jsonpatch.applyPatch(room.gameState as any, patch as any);
+        socket.to(currentRoom).emit('sync:patch', patch);
       } catch (e) {
         console.error('[sync:patch] apply error', e);
+        // パッチ適用失敗 → フル状態を全員に再送して復旧
+        io.to(currentRoom).emit('sync:fullState', room.gameState);
       }
+    } else {
+      // gameStateがない場合はパッチだけ転送
+      socket.to(currentRoom).emit('sync:patch', patch);
     }
-    socket.to(currentRoom).emit('sync:patch', patch);
   });
 
   // 切断
@@ -285,7 +291,13 @@ function getAdminRooms() {
 
 // 管理画面の認証ミドルウェア
 function adminAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
-  if (!ADMIN_TOKEN) { next(); return; } // トークン未設定なら認証なし（ローカル開発用）
+  // 本番ではADMIN_TOKEN必須。ローカル開発(localhost)のみトークン未設定で通す
+  if (!ADMIN_TOKEN) {
+    const host = req.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') { next(); return; }
+    res.status(403).json({ error: 'ADMIN_TOKENが設定されていません' });
+    return;
+  }
   const token = req.query.token as string || req.headers['x-admin-token'] as string;
   if (token === ADMIN_TOKEN) { next(); return; }
   res.status(401).json({ error: '認証が必要です。?token=xxx を付けてアクセスしてください' });
@@ -361,9 +373,13 @@ app.get('/api/sheets', async (req, res) => {
       })
     );
 
-    // キャッシュに保存
+    // キャッシュに保存（上限超えたら最古を削除）
+    if (sheetCache.size >= SHEET_CACHE_MAX) {
+      const oldest = sheetCache.keys().next().value!;
+      sheetCache.delete(oldest);
+    }
     sheetCache.set(id, { data: results, timestamp: Date.now() });
-    console.log(`[sheets] キャッシュ保存: ${id}`);
+    console.log(`[sheets] キャッシュ保存: ${id} (${sheetCache.size}/${SHEET_CACHE_MAX})`);
 
     res.json(results);
   } catch (err) {
@@ -393,9 +409,15 @@ const imageStorage = multer.memoryStorage();
 const uploadMiddleware = multer({ storage: imageStorage, limits: { fileSize: 10 * 1024 * 1024 } });
 const imageCache = new Map<string, { buffer: Buffer; contentType: string }>();
 
+const ALLOWED_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml']);
+
 app.post('/api/upload', uploadMiddleware.single('image'), (req, res) => {
   if (!req.file) {
     res.status(400).json({ error: '画像ファイルが必要です' });
+    return;
+  }
+  if (!ALLOWED_IMAGE_TYPES.has(req.file.mimetype)) {
+    res.status(400).json({ error: '許可されていないファイル形式です' });
     return;
   }
   const hash = crypto.createHash('sha256').update(req.file.buffer).digest('hex').slice(0, 16);

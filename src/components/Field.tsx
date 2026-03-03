@@ -226,6 +226,7 @@ export function Field() {
           })
           .catch((err) => {
             console.error('画像アップロード失敗', err);
+            useUIStore.getState().addToast('画像アップロードに失敗しました', 'error');
           });
       }
     };
