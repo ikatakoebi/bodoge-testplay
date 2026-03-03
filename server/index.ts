@@ -4,7 +4,7 @@ import { Server } from 'socket.io';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import path from 'path';
-import { existsSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync, readFileSync, unlinkSync, readdirSync } from 'fs';
 import multer from 'multer';
 import jsonpatch from 'fast-json-patch';
 
@@ -404,12 +404,23 @@ app.post('/api/sheets/refresh', (req, res) => {
   }
 });
 
-// === 画像アップロード ===
+// === 画像アップロード（ディスク永続化） ===
+const IMAGE_DIR = process.env.IMAGE_DIR || path.join(__dirname, 'uploads');
+if (!existsSync(IMAGE_DIR)) mkdirSync(IMAGE_DIR, { recursive: true });
+
+// MIMEタイプ→拡張子マッピング（Content-Type復元用）
+const MIME_MAP: Record<string, string> = {
+  png: 'image/png', jpeg: 'image/jpeg', jpg: 'image/jpeg',
+  gif: 'image/gif', webp: 'image/webp', 'svg+xml': 'image/svg+xml', svg: 'image/svg+xml',
+};
+const ALLOWED_IMAGE_TYPES = new Set(Object.values(MIME_MAP));
+
 const imageStorage = multer.memoryStorage();
 const uploadMiddleware = multer({ storage: imageStorage, limits: { fileSize: 10 * 1024 * 1024 } });
-const imageCache = new Map<string, { buffer: Buffer; contentType: string }>();
 
-const ALLOWED_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml']);
+// 起動時に既存ファイル数をログ
+const existingImages = readdirSync(IMAGE_DIR).filter(f => /\.(png|jpe?g|gif|webp|svg)$/i.test(f));
+console.log(`[images] ${IMAGE_DIR} に ${existingImages.length} 件の画像`);
 
 app.post('/api/upload', uploadMiddleware.single('image'), (req, res) => {
   if (!req.file) {
@@ -423,20 +434,31 @@ app.post('/api/upload', uploadMiddleware.single('image'), (req, res) => {
   const hash = crypto.createHash('sha256').update(req.file.buffer).digest('hex').slice(0, 16);
   const ext = req.file.mimetype.split('/')[1] || 'png';
   const filename = `${hash}.${ext}`;
-  imageCache.set(filename, { buffer: req.file.buffer, contentType: req.file.mimetype });
+  const filePath = path.join(IMAGE_DIR, filename);
+  if (!existsSync(filePath)) {
+    writeFileSync(filePath, req.file.buffer);
+  }
   console.log(`[upload] ${filename} (${(req.file.size / 1024).toFixed(1)}KB)`);
   res.json({ url: `/api/images/${filename}` });
 });
 
 app.get('/api/images/:filename', (req, res) => {
-  const entry = imageCache.get(req.params.filename);
-  if (!entry) {
+  const filename = req.params.filename;
+  // ファイル名バリデーション（パストラバーサル防止）
+  if (!/^[a-f0-9]+\.\w+$/.test(filename)) {
+    res.status(400).json({ error: '不正なファイル名' });
+    return;
+  }
+  const filePath = path.join(IMAGE_DIR, filename);
+  if (!existsSync(filePath)) {
     res.status(404).json({ error: '画像が見つかりません' });
     return;
   }
-  res.setHeader('Content-Type', entry.contentType);
+  const ext = filename.split('.').pop() || 'png';
+  const contentType = MIME_MAP[ext] || 'application/octet-stream';
+  res.setHeader('Content-Type', contentType);
   res.setHeader('Cache-Control', 'public, max-age=31536000');
-  res.end(entry.buffer);
+  res.sendFile(filePath);
 });
 
 // 本番ビルドの静的ファイル配信（dist/が存在するとき）
