@@ -63,26 +63,67 @@ export function initSyncBridge() {
     // パッチハンドラ
     (patch) => {
       if (prevSnapshotObj) {
-        applyPatch(prevSnapshotObj, patch as any);
-        // パッチが変更したフィールドの参照を新しくしてZustandに変更を検知させる
+        // パッチのパスを解析して変更された個別アイテムを特定
+        // 例: "/cardInstances/card1/x" → key="cardInstances", itemId="card1"
         const ops = patch as { path: string }[];
-        const changedKeys = new Set(ops.map(op => op.path.split('/')[1]));
-        const gs = prevSnapshotObj as ReturnType<typeof getGameSnapshot>;
-        const update: Record<string, unknown> = {};
-        for (const key of changedKeys) {
-          if (key in gs) {
-            const val = (gs as any)[key];
-            // 配列やオブジェクトはスプレッドで新しい参照を作る
-            if (Array.isArray(val)) {
-              update[key] = [...val];
-            } else if (val && typeof val === 'object') {
-              update[key] = { ...val };
-            } else {
-              update[key] = val;
-            }
+        const changedItems = new Map<string, Set<string>>(); // key → Set<itemId>
+        const changedTopOnly = new Set<string>(); // アイテムIDなしのトップレベル変更
+        for (const op of ops) {
+          const parts = op.path.split('/').filter(Boolean); // ["cardInstances", "card1", "x"]
+          const key = parts[0];
+          if (parts.length >= 2) {
+            if (!changedItems.has(key)) changedItems.set(key, new Set());
+            changedItems.get(key)!.add(parts[1]);
+          } else {
+            changedTopOnly.add(key);
           }
         }
-        if (changedKeys.has('cardDefinitions') && gs.cardDefinitions?.length) {
+
+        applyPatch(prevSnapshotObj, patch as any);
+        const gs = prevSnapshotObj as ReturnType<typeof getGameSnapshot>;
+        const update: Record<string, unknown> = {};
+
+        // 個別アイテムが変更されたフィールド → 変更されたアイテムだけ新しい参照を作る
+        for (const [key, itemIds] of changedItems) {
+          const val = (gs as any)[key];
+          if (Array.isArray(val)) {
+            // 配列: 変更されたインデックスの要素をコピー
+            const newArr = [...val];
+            for (const idx of itemIds) {
+              const i = Number(idx);
+              if (!isNaN(i) && newArr[i] && typeof newArr[i] === 'object') {
+                newArr[i] = { ...newArr[i] };
+              }
+            }
+            update[key] = newArr;
+          } else if (val && typeof val === 'object') {
+            // Record: 変更されたキーの値をコピー
+            const newObj = { ...val };
+            for (const itemId of itemIds) {
+              if (newObj[itemId] && typeof newObj[itemId] === 'object') {
+                newObj[itemId] = { ...newObj[itemId] };
+              }
+            }
+            update[key] = newObj;
+          } else {
+            update[key] = val;
+          }
+        }
+
+        // トップレベルのみ変更されたフィールド
+        for (const key of changedTopOnly) {
+          const val = (gs as any)[key];
+          if (Array.isArray(val)) {
+            update[key] = [...val];
+          } else if (val && typeof val === 'object') {
+            update[key] = { ...val };
+          } else {
+            update[key] = val;
+          }
+        }
+
+        if ((changedItems.has('cardDefinitions') || changedTopOnly.has('cardDefinitions'))
+            && gs.cardDefinitions?.length) {
           update.cardDefinitionMap = new Map(gs.cardDefinitions.map((d: CardDefinition) => [d.id, d]));
         }
         useGameStore.setState(update);
