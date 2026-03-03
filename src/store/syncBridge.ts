@@ -88,44 +88,60 @@ export function initSyncBridge() {
     }
   );
 
-  // ローカル変更をリモートにブロードキャスト＆localStorageに保存（debounce付き）
-  let syncTimer: ReturnType<typeof setTimeout> | null = null;
+  // ローカル変更をリモートにブロードキャスト＆localStorageに保存（throttle式）
+  const SYNC_INTERVAL = 50; // 50ms間隔 = 20fps
+  let lastSyncTime = 0;
+  let trailingTimer: ReturnType<typeof setTimeout> | null = null;
 
-  useGameStore.subscribe(() => {
-    const { isRemoteAction, roomId, isSpectator } = useSyncStore.getState();
-    if (isRemoteAction || isSpectator) return;
+  function flushSync() {
+    const { roomId } = useSyncStore.getState();
+    const current = getGameSnapshot();
+    if (prevSnapshotObj === null) {
+      prevSnapshotObj = deepClone(current) as typeof current;
+      if (roomId) {
+        useSyncStore.getState().sendFullState(current);
+      } else {
+        localStorage.setItem('bodogeGameState', JSON.stringify(current));
+      }
+      return;
+    }
 
-    // debounce: 高頻度な更新（ドラッグ等）をまとめる
-    if (syncTimer) clearTimeout(syncTimer);
-    syncTimer = setTimeout(() => {
-      const current = getGameSnapshot();
-      if (prevSnapshotObj === null) {
-        // 初回: フル送信
-        prevSnapshotObj = deepClone(current) as typeof current;
-        if (roomId) {
+    const patch = compare(prevSnapshotObj, current);
+    if (patch.length > 0) {
+      prevSnapshotObj = deepClone(current) as typeof current;
+      if (roomId) {
+        const patchStr = JSON.stringify(patch);
+        const fullStr = JSON.stringify(current);
+        if (patchStr.length > fullStr.length * 0.8) {
           useSyncStore.getState().sendFullState(current);
         } else {
-          localStorage.setItem('bodogeGameState', JSON.stringify(current));
+          useSyncStore.getState().sendPatch(patch);
         }
-        return;
+      } else {
+        localStorage.setItem('bodogeGameState', JSON.stringify(current));
       }
+    }
+  }
 
-      const patch = compare(prevSnapshotObj, current);
-      if (patch.length > 0) {
-        prevSnapshotObj = deepClone(current) as typeof current;
-        if (roomId) {
-          const patchStr = JSON.stringify(patch);
-          const fullStr = JSON.stringify(current);
-          if (patchStr.length > fullStr.length * 0.8) {
-            useSyncStore.getState().sendFullState(current);
-          } else {
-            useSyncStore.getState().sendPatch(patch);
-          }
-        } else {
-          localStorage.setItem('bodogeGameState', JSON.stringify(current));
-        }
-      }
-    }, 100);
+  useGameStore.subscribe(() => {
+    const { isRemoteAction, isSpectator } = useSyncStore.getState();
+    if (isRemoteAction || isSpectator) return;
+
+    const now = Date.now();
+    // throttle: 前回送信からINTERVAL経過していれば即送信
+    if (now - lastSyncTime >= SYNC_INTERVAL) {
+      lastSyncTime = now;
+      if (trailingTimer) { clearTimeout(trailingTimer); trailingTimer = null; }
+      flushSync();
+    } else {
+      // 最後の変更を漏らさないためのtrailing送信
+      if (trailingTimer) clearTimeout(trailingTimer);
+      trailingTimer = setTimeout(() => {
+        lastSyncTime = Date.now();
+        trailingTimer = null;
+        flushSync();
+      }, SYNC_INTERVAL);
+    }
   });
 
   // ビューポート（zoom/pan）をlocalStorageに保存（debounce付き、リモート同期不要）
