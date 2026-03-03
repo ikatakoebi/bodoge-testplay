@@ -29,16 +29,23 @@ interface PlayerInfo {
   isHost: boolean;
 }
 
-// リモートアクション/フル状態のハンドラ（外部から登録）
+// リモートアクション/フル状態/パッチのハンドラ（外部から登録）
 type ActionHandler = (action: { type: string; payload: unknown }) => void;
 type FullStateHandler = (state: Record<string, unknown>) => void;
+type PatchHandler = (patch: unknown[]) => void;
 
 let onRemoteAction: ActionHandler | null = null;
 let onRemoteFullState: FullStateHandler | null = null;
+let onRemotePatch: PatchHandler | null = null;
 
-export function registerSyncHandlers(actionHandler: ActionHandler, fullStateHandler: FullStateHandler) {
+export function registerSyncHandlers(
+  actionHandler: ActionHandler,
+  fullStateHandler: FullStateHandler,
+  patchHandler?: PatchHandler
+) {
   onRemoteAction = actionHandler;
   onRemoteFullState = fullStateHandler;
+  onRemotePatch = patchHandler || null;
 }
 
 interface SyncState {
@@ -61,6 +68,7 @@ interface SyncState {
   spectateRoom: (roomId: string) => Promise<boolean>;
   sendAction: (type: string, payload: unknown) => void;
   sendFullState: (state: unknown) => void;
+  sendPatch: (patch: unknown[]) => void;
   autoRejoin: () => Promise<{ playerId: string } | null>;
 }
 
@@ -108,6 +116,12 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     socket.on('sync:fullState', (state: Record<string, unknown>) => {
       set({ isRemoteAction: true });
       onRemoteFullState?.(state);
+      set({ isRemoteAction: false });
+    });
+
+    socket.on('sync:patch', (patch: unknown[]) => {
+      set({ isRemoteAction: true });
+      onRemotePatch?.(patch);
       set({ isRemoteAction: false });
     });
 
@@ -183,6 +197,12 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     const { socket, roomId, isSpectator } = get();
     if (!socket || !roomId || isSpectator) return;
     socket.emit('sync:fullState', state);
+  },
+
+  sendPatch: (patch) => {
+    const { socket, roomId, isRemoteAction, isSpectator } = get();
+    if (!socket || !roomId || isRemoteAction || isSpectator) return;
+    socket.emit('sync:patch', patch);
   },
 
   autoRejoin: async () => {

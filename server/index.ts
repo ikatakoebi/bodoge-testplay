@@ -5,6 +5,8 @@ import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { existsSync } from 'fs';
+import multer from 'multer';
+import { applyPatch } from 'fast-json-patch';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distPath = path.resolve(__dirname, '../dist');
@@ -169,6 +171,20 @@ io.on('connection', (socket) => {
       room.gameState = state;
     }
     socket.to(currentRoom).emit('sync:fullState', state);
+  });
+
+  // 差分同期
+  socket.on('sync:patch', (patch: unknown[]) => {
+    if (!currentRoom) return;
+    const room = rooms.get(currentRoom);
+    if (room && room.gameState) {
+      try {
+        applyPatch(room.gameState as any, patch as any);
+      } catch (e) {
+        console.error('[sync:patch] apply error', e);
+      }
+    }
+    socket.to(currentRoom).emit('sync:patch', patch);
   });
 
   // 切断
@@ -370,6 +386,35 @@ app.post('/api/sheets/refresh', (req, res) => {
     console.log('[sheets] 全キャッシュクリア');
     res.json({ ok: true, message: 'All sheet cache cleared' });
   }
+});
+
+// === 画像アップロード ===
+const imageStorage = multer.memoryStorage();
+const uploadMiddleware = multer({ storage: imageStorage, limits: { fileSize: 10 * 1024 * 1024 } });
+const imageCache = new Map<string, { buffer: Buffer; contentType: string }>();
+
+app.post('/api/upload', uploadMiddleware.single('image'), (req, res) => {
+  if (!req.file) {
+    res.status(400).json({ error: '画像ファイルが必要です' });
+    return;
+  }
+  const hash = crypto.createHash('sha256').update(req.file.buffer).digest('hex').slice(0, 16);
+  const ext = req.file.mimetype.split('/')[1] || 'png';
+  const filename = `${hash}.${ext}`;
+  imageCache.set(filename, { buffer: req.file.buffer, contentType: req.file.mimetype });
+  console.log(`[upload] ${filename} (${(req.file.size / 1024).toFixed(1)}KB)`);
+  res.json({ url: `/api/images/${filename}` });
+});
+
+app.get('/api/images/:filename', (req, res) => {
+  const entry = imageCache.get(req.params.filename);
+  if (!entry) {
+    res.status(404).json({ error: '画像が見つかりません' });
+    return;
+  }
+  res.setHeader('Content-Type', entry.contentType);
+  res.setHeader('Cache-Control', 'public, max-age=31536000');
+  res.end(entry.buffer);
 });
 
 // 本番ビルドの静的ファイル配信（dist/が存在するとき）

@@ -592,20 +592,27 @@ export function ContextMenu() {
             input.onchange = () => {
               const file = input.files?.[0];
               if (!file) return;
-              const reader = new FileReader();
-              reader.onload = () => {
-                const dataUrl = reader.result as string;
-                const img = new Image();
-                img.onload = () => {
-                  const maxW = 300;
-                  const scale = img.width > maxW ? maxW / img.width : 1;
-                  saveSnapshot();
-                  importImageAsCard(dataUrl, fieldX, fieldY, img.width * scale, img.height * scale);
-                  addLog(`画像をカードとして配置した: ${file.name}`);
-                };
-                img.src = dataUrl;
-              };
-              reader.readAsDataURL(file);
+              const serverUrl = import.meta.env.VITE_SERVER_URL as string
+                || (import.meta.env.DEV ? 'http://localhost:3210' : '');
+              const formData = new FormData();
+              formData.append('image', file);
+              fetch(serverUrl + '/api/upload', { method: 'POST', body: formData })
+                .then((res) => res.json())
+                .then(({ url: imageUrl }: { url: string }) => {
+                  const fullUrl = serverUrl ? serverUrl + imageUrl : imageUrl;
+                  const img = new Image();
+                  img.onload = () => {
+                    const maxW = 300;
+                    const scale = img.width > maxW ? maxW / img.width : 1;
+                    saveSnapshot();
+                    importImageAsCard(fullUrl, fieldX, fieldY, img.width * scale, img.height * scale);
+                    addLog(`画像をカードとして配置した: ${file.name}`);
+                  };
+                  img.src = fullUrl;
+                })
+                .catch((err) => {
+                  console.error('画像アップロード失敗', err);
+                });
             };
             input.click();
             hideContextMenu();

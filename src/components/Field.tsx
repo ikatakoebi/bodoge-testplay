@@ -205,22 +205,28 @@ export function Field() {
       const files = e.dataTransfer?.files;
       if (!files || files.length === 0) return;
       const fp = screenToField(e.clientX, e.clientY, el);
+      const serverUrl = import.meta.env.VITE_SERVER_URL as string
+        || (import.meta.env.DEV ? 'http://localhost:3210' : '');
       for (const file of Array.from(files)) {
         if (!file.type.startsWith('image/')) continue;
-        // data:URLに変換して永続化（blob:URLはリロードで消える）
-        const reader = new FileReader();
-        reader.onload = () => {
-          const dataUrl = reader.result as string;
-          const img = new Image();
-          img.onload = () => {
-            const maxW = 300;
-            const scale = img.width > maxW ? maxW / img.width : 1;
-            importImageAsCard(dataUrl, fp.x, fp.y, img.width * scale, img.height * scale);
-            addLog(`画像をカードとして配置した: ${file.name}`);
-          };
-          img.src = dataUrl;
-        };
-        reader.readAsDataURL(file);
+        const formData = new FormData();
+        formData.append('image', file);
+        fetch(serverUrl + '/api/upload', { method: 'POST', body: formData })
+          .then((res) => res.json())
+          .then(({ url: imageUrl }: { url: string }) => {
+            const fullUrl = serverUrl ? serverUrl + imageUrl : imageUrl;
+            const img = new Image();
+            img.onload = () => {
+              const maxW = 300;
+              const scale = img.width > maxW ? maxW / img.width : 1;
+              importImageAsCard(fullUrl, fp.x, fp.y, img.width * scale, img.height * scale);
+              addLog(`画像をカードとして配置した: ${file.name}`);
+            };
+            img.src = fullUrl;
+          })
+          .catch((err) => {
+            console.error('画像アップロード失敗', err);
+          });
       }
     };
     el.addEventListener('dragover', handleDragOver);

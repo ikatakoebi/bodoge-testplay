@@ -1,3 +1,4 @@
+import { compare, applyPatch, deepClone } from 'fast-json-patch';
 import { useGameStore } from './gameStore';
 import { useUIStore } from './uiStore';
 import { useSyncStore, registerSyncHandlers } from './syncStore';
@@ -24,12 +25,12 @@ function getGameSnapshot() {
   };
 }
 
-// 差分検出用の前回状態
-let prevSnapshot = '';
+// 差分検出用の前回状態（オブジェクト形式）
+let prevSnapshotObj: ReturnType<typeof getGameSnapshot> | null = null;
 
 // 同期ブリッジの初期化（アプリ起動時に1回呼ぶ）
 export function initSyncBridge() {
-  // リモートからのアクション/フル状態のハンドラを登録
+  // リモートからのアクション/フル状態/パッチのハンドラを登録
   registerSyncHandlers(
     // アクションハンドラ: リモートからフル状態を受信して適用
     () => {
@@ -38,6 +39,7 @@ export function initSyncBridge() {
     // フル状態ハンドラ
     (state) => {
       const gs = state as ReturnType<typeof getGameSnapshot>;
+      prevSnapshotObj = deepClone(gs) as typeof gs;
       useGameStore.setState({
         cardInstances: gs.cardInstances || {},
         cardStacks: gs.cardStacks || {},
@@ -57,6 +59,32 @@ export function initSyncBridge() {
         ...(gs.players?.length ? { players: gs.players } : {}),
         ...(gs.currentPlayerId ? { currentPlayerId: gs.currentPlayerId } : {}),
       });
+    },
+    // パッチハンドラ
+    (patch) => {
+      if (prevSnapshotObj) {
+        applyPatch(prevSnapshotObj, patch as any);
+        const gs = prevSnapshotObj as ReturnType<typeof getGameSnapshot>;
+        useGameStore.setState({
+          cardInstances: gs.cardInstances || {},
+          cardStacks: gs.cardStacks || {},
+          areas: gs.areas || [],
+          counters: gs.counters || {},
+          images: gs.images || {},
+          memos: gs.memos || {},
+          tokens: gs.tokens || {},
+          ...(gs.cardDefinitions?.length ? {
+            cardDefinitions: gs.cardDefinitions,
+            cardDefinitionMap: new Map(gs.cardDefinitions.map((d: CardDefinition) => [d.id, d])),
+          } : {}),
+          ...(gs.cardTemplates && Object.keys(gs.cardTemplates).length ? { cardTemplates: gs.cardTemplates } : {}),
+          ...(gs.counterDefs?.length ? { counterDefs: gs.counterDefs } : {}),
+          ...(gs.setupText ? { setupText: gs.setupText } : {}),
+          ...(gs.playerCount ? { playerCount: gs.playerCount } : {}),
+          ...(gs.players?.length ? { players: gs.players } : {}),
+          ...(gs.currentPlayerId ? { currentPlayerId: gs.currentPlayerId } : {}),
+        });
+      }
     }
   );
 
@@ -70,15 +98,31 @@ export function initSyncBridge() {
     // debounce: 高頻度な更新（ドラッグ等）をまとめる
     if (syncTimer) clearTimeout(syncTimer);
     syncTimer = setTimeout(() => {
-      const snapshot = JSON.stringify(getGameSnapshot());
-      if (snapshot !== prevSnapshot) {
-        prevSnapshot = snapshot;
+      const current = getGameSnapshot();
+      if (prevSnapshotObj === null) {
+        // 初回: フル送信
+        prevSnapshotObj = deepClone(current) as typeof current;
         if (roomId) {
-          // オンライン: サーバーにブロードキャスト
-          useSyncStore.getState().sendFullState(JSON.parse(snapshot));
+          useSyncStore.getState().sendFullState(current);
         } else {
-          // ソロ: localStorageに保存
-          localStorage.setItem('bodogeGameState', snapshot);
+          localStorage.setItem('bodogeGameState', JSON.stringify(current));
+        }
+        return;
+      }
+
+      const patch = compare(prevSnapshotObj, current);
+      if (patch.length > 0) {
+        prevSnapshotObj = deepClone(current) as typeof current;
+        if (roomId) {
+          const patchStr = JSON.stringify(patch);
+          const fullStr = JSON.stringify(current);
+          if (patchStr.length > fullStr.length * 0.8) {
+            useSyncStore.getState().sendFullState(current);
+          } else {
+            useSyncStore.getState().sendPatch(patch);
+          }
+        } else {
+          localStorage.setItem('bodogeGameState', JSON.stringify(current));
         }
       }
     }, 100);
