@@ -9,6 +9,7 @@ import { existsSync } from 'fs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distPath = path.resolve(__dirname, '../dist');
 const serverStartedAt = Date.now();
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || '';
 
 const app = express();
 app.use((_req, res, next) => {
@@ -266,19 +267,27 @@ function getAdminRooms() {
   });
 }
 
-app.get('/api/admin/stats', (_req, res) => {
+// 管理画面の認証ミドルウェア
+function adminAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+  if (!ADMIN_TOKEN) { next(); return; } // トークン未設定なら認証なし（ローカル開発用）
+  const token = req.query.token as string || req.headers['x-admin-token'] as string;
+  if (token === ADMIN_TOKEN) { next(); return; }
+  res.status(401).json({ error: '認証が必要です。?token=xxx を付けてアクセスしてください' });
+}
+
+app.get('/api/admin/stats', adminAuth, (_req, res) => {
   res.json(getAdminStats());
 });
 
-app.get('/api/admin/rooms', (_req, res) => {
+app.get('/api/admin/rooms', adminAuth, (_req, res) => {
   res.json(getAdminRooms());
 });
 
-app.get('/api/admin/events', (_req, res) => {
+app.get('/api/admin/events', adminAuth, (_req, res) => {
   res.json(eventLog);
 });
 
-app.get('/admin', (_req, res) => {
+app.get('/admin', adminAuth, (_req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));
 });
 

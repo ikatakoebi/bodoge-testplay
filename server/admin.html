@@ -270,6 +270,14 @@
 <script>
 const $ = (id) => document.getElementById(id);
 
+// URLからトークンを取得して保持
+const urlParams = new URLSearchParams(location.search);
+const adminToken = urlParams.get('token') || '';
+
+function apiUrl(path) {
+  return adminToken ? path + (path.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(adminToken) : path;
+}
+
 // Socket.io接続
 const socket = io(location.origin, { transports: ['websocket'] });
 
@@ -299,9 +307,9 @@ socket.on('admin:event', (entry) => {
 async function fetchAll() {
   try {
     const [statsRes, roomsRes, eventsRes] = await Promise.all([
-      fetch('/api/admin/stats'),
-      fetch('/api/admin/rooms'),
-      fetch('/api/admin/events'),
+      fetch(apiUrl('/api/admin/stats')),
+      fetch(apiUrl('/api/admin/rooms')),
+      fetch(apiUrl('/api/admin/events')),
     ]);
     const stats = await statsRes.json();
     const rooms = await roomsRes.json();
