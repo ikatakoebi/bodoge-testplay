@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import { existsSync } from 'fs';
 import multer from 'multer';
-import { applyPatch } from 'fast-json-patch';
+import jsonpatch from 'fast-json-patch';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distPath = path.resolve(__dirname, '../dist');
@@ -179,7 +179,7 @@ io.on('connection', (socket) => {
     const room = rooms.get(currentRoom);
     if (room && room.gameState) {
       try {
-        applyPatch(room.gameState as any, patch as any);
+        jsonpatch.applyPatch(room.gameState as any, patch as any);
       } catch (e) {
         console.error('[sync:patch] apply error', e);
       }
