@@ -40,6 +40,56 @@
   box-shadow: 0 0 12px rgba(100, 180, 255, 0.4);
 }
 
+/* 画像カード: 枠線・影なしで透過を維持 */
+.card-component.image-card {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.card-component.image-card:active {
+  box-shadow: none;
+}
+
+/* リサイズハンドル */
+.resize-handle {
+  position: absolute;
+  z-index: 30;
+}
+
+.resize-n, .resize-s {
+  left: 6px;
+  right: 6px;
+  height: 6px;
+  cursor: ns-resize;
+}
+.resize-n { top: -3px; }
+.resize-s { bottom: -3px; }
+
+.resize-e, .resize-w {
+  top: 6px;
+  bottom: 6px;
+  width: 6px;
+  cursor: ew-resize;
+}
+.resize-e { right: -3px; }
+.resize-w { left: -3px; }
+
+.resize-ne, .resize-nw, .resize-se, .resize-sw {
+  width: 10px;
+  height: 10px;
+}
+.resize-nw { top: -4px; left: -4px; cursor: nwse-resize; }
+.resize-ne { top: -4px; right: -4px; cursor: nesw-resize; }
+.resize-sw { bottom: -4px; left: -4px; cursor: nesw-resize; }
+.resize-se { bottom: -4px; right: -4px; cursor: nwse-resize; }
+
+/* ホバー時にハンドルを視覚化 */
+.card-component:hover .resize-handle {
+  background: rgba(100, 180, 255, 0.4);
+  border-radius: 2px;
+}
+
 /* 表面 */
 .card-front {
   width: 100%;

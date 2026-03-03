@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ボドゲテストプレイ - 管理画面</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f1117;
+    color: #e1e4e8;
+    min-height: 100vh;
+  }
+  header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #f0f6fc;
+  }
+  header .badge {
+    background: #238636;
+    color: #fff;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  header .badge.offline { background: #da3633; }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #30363d;
+    font-size: 14px;
+    font-weight: 600;
+    color: #f0f6fc;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-body { padding: 16px; }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .stat-item {
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 6px;
+    padding: 12px;
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #58a6ff;
+    line-height: 1.2;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: #8b949e;
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    color: #8b949e;
+    font-weight: 500;
+    border-bottom: 1px solid #21262d;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #21262d;
+  }
+  tr:last-child td { border-bottom: none; }
+  .player-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #21262d;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    margin: 2px;
+  }
+  .player-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .host-star { color: #f0c000; font-size: 10px; }
+  .event-log {
+    max-height: 380px;
+    overflow-y: auto;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    scrollbar-width: thin;
+    scrollbar-color: #30363d #0d1117;
+  }
+  .event-log::-webkit-scrollbar { width: 6px; }
+  .event-log::-webkit-scrollbar-track { background: #0d1117; }
+  .event-log::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+  .event-entry {
+    padding: 3px 8px;
+    border-left: 3px solid transparent;
+    display: flex;
+    gap: 8px;
+  }
+  .event-entry:hover { background: #1c2128; }
+  .event-time { color: #484f58; white-space: nowrap; }
+  .event-type {
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: 90px;
+  }
+  .event-type.connect { color: #3fb950; border-color: #238636; }
+  .event-type.disconnect { color: #f85149; border-color: #da3633; }
+  .event-type.room-create { color: #58a6ff; border-color: #1f6feb; }
+  .event-type.room-join { color: #d2a8ff; border-color: #8957e5; }
+  .event-type.room-leave { color: #ffa657; border-color: #d29922; }
+  .event-type.room-delete { color: #f85149; border-color: #da3633; }
+  .event-detail { color: #8b949e; overflow: hidden; text-overflow: ellipsis; }
+  .empty { color: #484f58; text-align: center; padding: 24px; font-size: 13px; }
+  .size-bytes { color: #8b949e; font-size: 11px; }
+  .cache-section { display: flex; align-items: center; justify-content: space-between; }
+  .cache-count { font-size: 20px; font-weight: 700; color: #58a6ff; }
+  button {
+    background: #21262d;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  button:hover { background: #30363d; }
+  button:active { background: #484f58; }
+  .full-width { grid-column: 1 / -1; }
+  .mem-bar {
+    background: #21262d;
+    border-radius: 4px;
+    height: 8px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+  .mem-bar-fill {
+    background: #58a6ff;
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s;
+  }
+  .mem-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #8b949e;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>ボドゲテストプレイ 管理画面</h1>
+  <span class="badge" id="connBadge">接続中...</span>
+</header>
+<div class="grid">
+  <!-- サーバーステータス -->
+  <div class="card">
+    <div class="card-header">サーバー状態</div>
+    <div class="card-body">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="statUptime">-</div>
+          <div class="stat-label">稼働時間</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="statConns">-</div>
+          <div class="stat-label">接続数</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="statRooms">-</div>
+          <div class="stat-label">ルーム数</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="statPlayers">-</div>
+          <div class="stat-label">プレイヤー数</div>
+        </div>
+      </div>
+      <div style="margin-top:16px;">
+        <div style="font-size:12px;color:#8b949e;margin-bottom:4px;">ヒープメモリ</div>
+        <div class="mem-bar"><div class="mem-bar-fill" id="memBar" style="width:0%"></div></div>
+        <div class="mem-label"><span id="memUsed">-</span><span id="memTotal">-</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- キャッシュ -->
+  <div class="card">
+    <div class="card-header">
+      スプレッドシート キャッシュ
+      <button onclick="clearCache()">全クリア</button>
+    </div>
+    <div class="card-body">
+      <div class="cache-section">
+        <div>
+          <div class="cache-count" id="cacheCount">-</div>
+          <div style="font-size:12px;color:#8b949e;margin-top:4px;">件キャッシュ中</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ルーム一覧 -->
+  <div class="card full-width">
+    <div class="card-header">
+      ルーム一覧
+      <span id="roomCountLabel" style="font-weight:400;color:#8b949e;font-size:12px;">0 部屋</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+      <div id="roomsTable"></div>
+    </div>
+  </div>
+
+  <!-- イベントログ -->
+  <div class="card full-width">
+    <div class="card-header">
+      イベントログ
+      <span id="eventCountLabel" style="font-weight:400;color:#8b949e;font-size:12px;">0 件</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+      <div class="event-log" id="eventLog"></div>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+
+// Socket.io接続
+const socket = io(location.origin, { transports: ['websocket'] });
+
+socket.on('connect', () => {
+  $('connBadge').textContent = '接続済み';
+  $('connBadge').className = 'badge';
+  socket.emit('admin:subscribe');
+  fetchAll();
+});
+
+socket.on('disconnect', () => {
+  $('connBadge').textContent = '切断';
+  $('connBadge').className = 'badge offline';
+});
+
+// リアルタイム更新
+socket.on('admin:stats', (data) => {
+  renderStats(data.stats);
+  renderRooms(data.rooms);
+});
+
+socket.on('admin:event', (entry) => {
+  appendEvent(entry);
+});
+
+// 初回データ取得
+async function fetchAll() {
+  try {
+    const [statsRes, roomsRes, eventsRes] = await Promise.all([
+      fetch('/api/admin/stats'),
+      fetch('/api/admin/rooms'),
+      fetch('/api/admin/events'),
+    ]);
+    const stats = await statsRes.json();
+    const rooms = await roomsRes.json();
+    const events = await eventsRes.json();
+    renderStats(stats);
+    renderRooms(rooms);
+    renderEvents(events);
+  } catch (e) {
+    console.error('Failed to fetch admin data', e);
+  }
+}
+
+function fmtUptime(ms) {
+  const s = Math.floor(ms / 1000);
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (d > 0) return d + '日 ' + h + '時間';
+  if (h > 0) return h + '時間 ' + m + '分';
+  return m + '分 ' + (s % 60) + '秒';
+}
+
+function fmtBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+  return (b / 1048576).toFixed(1) + ' MB';
+}
+
+function fmtTime(ts) {
+  const d = new Date(ts);
+  return d.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function renderStats(s) {
+  $('statUptime').textContent = fmtUptime(s.uptime);
+  $('statConns').textContent = s.connections;
+  $('statRooms').textContent = s.rooms;
+  $('statPlayers').textContent = s.totalPlayers;
+  $('cacheCount').textContent = s.sheetCacheEntries;
+
+  const pct = s.memory.heapTotal > 0
+    ? Math.round((s.memory.heapUsed / s.memory.heapTotal) * 100) : 0;
+  $('memBar').style.width = pct + '%';
+  $('memUsed').textContent = fmtBytes(s.memory.heapUsed) + ' 使用中';
+  $('memTotal').textContent = fmtBytes(s.memory.heapTotal) + ' 合計';
+}
+
+function renderRooms(rooms) {
+  const el = $('roomsTable');
+  $('roomCountLabel').textContent = rooms.length + ' 部屋';
+  if (rooms.length === 0) {
+    el.innerHTML = '<div class="empty">アクティブなルームはありません</div>';
+    return;
+  }
+  let html = '<table><thead><tr><th>ルームID</th><th>人数</th><th>メンバー</th><th>状態サイズ</th><th>ステータス</th><th></th></tr></thead><tbody>';
+  for (const r of rooms) {
+    const chips = r.players.map(p => {
+      const star = p.isHost ? '<span class="host-star">&#9733;</span>' : '';
+      return '<span class="player-chip">' + star +
+        '<span class="player-dot" style="background:' + esc(p.color) + '"></span>' +
+        esc(p.name) + ' <span style="color:#484f58">' + esc(p.playerId) + '</span></span>';
+    }).join('');
+    const status = r.hasEmptyTimer
+      ? '<span style="color:#ffa657">退室待ち</span>'
+      : '<span style="color:#3fb950">稼働中</span>';
+    html += '<tr><td style="font-family:monospace;color:#58a6ff">' + esc(r.roomId) + '</td>' +
+      '<td>' + r.playerCount + '</td>' +
+      '<td>' + chips + '</td>' +
+      '<td><span class="size-bytes">' + fmtBytes(r.stateSize) + '</span></td>' +
+      '<td>' + status + '</td>' +
+      '<td><button onclick="spectate(\'' + esc(r.roomId) + '\')" style="background:#1f6feb;color:#fff;border-color:#1f6feb;">観戦</button></td></tr>';
+  }
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+const eventTypeLabels = {
+  'connect': '接続',
+  'disconnect': '切断',
+  'room:create': 'ルーム作成',
+  'room:join': '入室',
+  'room:leave': '退室',
+  'room:delete': 'ルーム削除',
+};
+const eventTypeCss = {
+  'connect': 'connect',
+  'disconnect': 'disconnect',
+  'room:create': 'room-create',
+  'room:join': 'room-join',
+  'room:leave': 'room-leave',
+  'room:delete': 'room-delete',
+};
+
+function renderEvents(events) {
+  const el = $('eventLog');
+  el.innerHTML = '';
+  $('eventCountLabel').textContent = events.length + ' 件';
+  for (const e of events) {
+    appendEvent(e, false);
+  }
+  el.scrollTop = el.scrollHeight;
+}
+
+function appendEvent(e, scroll = true) {
+  const el = $('eventLog');
+  const div = document.createElement('div');
+  div.className = 'event-entry';
+  const css = eventTypeCss[e.type] || '';
+  div.innerHTML =
+    '<span class="event-time">' + fmtTime(e.timestamp) + '</span>' +
+    '<span class="event-type ' + css + '">' + (eventTypeLabels[e.type] || e.type) + '</span>' +
+    '<span class="event-detail">' + esc(e.detail) + '</span>';
+  // イベントタイプに応じてborder-leftを設定
+  div.style.borderLeftColor = getComputedStyle(div.querySelector('.event-type')).color;
+  el.appendChild(div);
+
+  // ラベル更新
+  const count = el.children.length;
+  $('eventCountLabel').textContent = count + ' 件';
+
+  if (scroll) {
+    el.scrollTop = el.scrollHeight;
+  }
+}
+
+async function clearCache() {
+  try {
+    await fetch('/api/sheets/refresh', { method: 'POST' });
+    $('cacheCount').textContent = '0';
+  } catch (e) {
+    console.error('Failed to clear cache', e);
+  }
+}
+
+function spectate(roomId) {
+  // 開発中(localhost:3210)はViteのlocalhost:5173へ、本番は同一オリジン
+  const isDev = location.hostname === 'localhost' && location.port === '3210';
+  const appOrigin = isDev ? 'http://localhost:5173' : location.origin;
+  window.open(appOrigin + '/?spectate=' + encodeURIComponent(roomId), '_blank');
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+</script>
+</body>
+</html>

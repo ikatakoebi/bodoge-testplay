@@ -8,6 +8,23 @@ let nextZIndex = 1;
 export function getNextZIndex(): number {
   return nextZIndex++;
 }
+/** 全オブジェクトの最大zIndex+1を返し、nextZIndexも同期する */
+export function getTopZIndex(state: {
+  cardInstances: Record<string, { zIndex: number }>;
+  cardStacks: Record<string, { zIndex: number }>;
+  counters: Record<string, { zIndex: number }>;
+  memos: Record<string, { zIndex: number }>;
+  tokens: Record<string, { zIndex: number }>;
+}): number {
+  let max = nextZIndex;
+  for (const c of Object.values(state.cardInstances)) if (c.zIndex >= max) max = c.zIndex + 1;
+  for (const s of Object.values(state.cardStacks)) if (s.zIndex >= max) max = s.zIndex + 1;
+  for (const c of Object.values(state.counters)) if (c.zIndex >= max) max = c.zIndex + 1;
+  for (const m of Object.values(state.memos)) if (m.zIndex >= max) max = m.zIndex + 1;
+  for (const t of Object.values(state.tokens)) if (t.zIndex >= max) max = t.zIndex + 1;
+  nextZIndex = max + 1;
+  return max;
+}
 
 let instanceCounter = 0;
 function generateInstanceId(): string {
@@ -105,6 +122,7 @@ interface GameState {
   rotateCards: (ids: string[], delta: number) => void;
   removeCards: (ids: string[]) => void;
   duplicateCards: (instanceIds: string[]) => void;
+  resizeCard: (instanceId: string, width: number, height: number, x?: number, y?: number) => void;
   setAreas: (areas: Area[]) => void;
   addArea: (area: Area) => void;
   removeArea: (areaId: string) => void;
@@ -123,6 +141,7 @@ interface GameState {
   unpeekStack: (stackId: string) => void;
   moveStack: (stackId: string, x: number, y: number) => void;
   bringStackToFront: (stackId: string) => void;
+  removeStack: (stackId: string) => void;
 
   // スタック結合
   mergeStacks: (targetStackId: string, sourceStackId: string) => void;
@@ -170,6 +189,10 @@ interface GameState {
   // セットアップテキスト
   setupText: string;
   setSetupText: (text: string) => void;
+
+  // セットアップ用プレイ人数（永続化される）
+  playerCount: number;
+  setPlayerCount: (count: number) => void;
 
   // 所有権譲渡
   transferOwnership: (instanceId: string, newOwnerId: string) => void;
@@ -312,7 +335,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     set((state) => ({
       cardInstances: {
         ...state.cardInstances,
-        [instanceId]: { ...state.cardInstances[instanceId], zIndex: getNextZIndex() },
+        [instanceId]: { ...state.cardInstances[instanceId], zIndex: getTopZIndex(state) },
       },
     })),
 
@@ -417,12 +440,32 @@ export const useGameStore = create<GameState>((set, get) => ({
         stackId: null,
         homeStackId: null,
         ownerId: null,
+        width: card.width,
+        height: card.height,
       };
     }
     set((s) => ({
       cardInstances: { ...s.cardInstances, ...newInstances },
     }));
   },
+
+  resizeCard: (instanceId, width, height, x?, y?) =>
+    set((state) => {
+      const card = state.cardInstances[instanceId];
+      if (!card) return state;
+      return {
+        cardInstances: {
+          ...state.cardInstances,
+          [instanceId]: {
+            ...card,
+            width: Math.max(20, width),
+            height: Math.max(20, height),
+            ...(x !== undefined ? { x } : {}),
+            ...(y !== undefined ? { y } : {}),
+          },
+        },
+      };
+    }),
 
   setAreas: (areas) => set({ areas }),
   addArea: (area) => set((state) => ({ areas: [...state.areas, area] })),
@@ -655,9 +698,28 @@ export const useGameStore = create<GameState>((set, get) => ({
       return {
         cardStacks: {
           ...state.cardStacks,
-          [stackId]: { ...stack, zIndex: getNextZIndex() },
+          [stackId]: { ...stack, zIndex: getTopZIndex(state) },
         },
       };
+    }),
+
+  removeStack: (stackId) =>
+    set((state) => {
+      const stack = state.cardStacks[stackId];
+      if (!stack) return state;
+      const updatedCards = { ...state.cardInstances };
+      // スタック内のカードも全て削除
+      for (const id of stack.cardInstanceIds) {
+        delete updatedCards[id];
+      }
+      // homeStackIdが一致するフィールド上のカードも削除
+      for (const card of Object.values(updatedCards)) {
+        if (card.homeStackId === stackId && !card.stackId) {
+          delete updatedCards[card.instanceId];
+        }
+      }
+      const { [stackId]: _, ...remainingStacks } = state.cardStacks;
+      return { cardInstances: updatedCards, cardStacks: remainingStacks };
     }),
 
   collectToStack: (stackId) =>
@@ -807,7 +869,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             definitionId: defId,
             x,
             y,
-            zIndex: Date.now(),
+            zIndex: getNextZIndex(),
             face: 'up',
             visibility: 'public',
             ownerId: null,
@@ -958,6 +1020,10 @@ export const useGameStore = create<GameState>((set, get) => ({
   // === セットアップテキスト ===
   setupText: '',
   setSetupText: (text) => set({ setupText: text }),
+
+  // === プレイ人数 ===
+  playerCount: 2,
+  setPlayerCount: (count) => set({ playerCount: count }),
 
   // === 所有権譲渡 ===
   transferOwnership: (instanceId, newOwnerId) =>
@@ -1301,6 +1367,15 @@ export const useGameStore = create<GameState>((set, get) => ({
       // カウンターをリセットしてID衝突を防ぐ
       instanceCounter = Date.now();
       stackCounter = Date.now();
+      // zIndexカウンターを既存データの最大値に合わせる
+      const allZIndexes = [
+        ...Object.values(data.cardInstances || {}).map((c: any) => c.zIndex as number),
+        ...Object.values(data.cardStacks || {}).map((s: any) => s.zIndex as number),
+        ...Object.values(data.counters || {}).map((c: any) => c.zIndex as number),
+        ...Object.values(data.memos || {}).map((m: any) => m.zIndex as number),
+        ...Object.values(data.tokens || {}).map((t: any) => t.zIndex as number),
+      ].filter((z) => typeof z === 'number');
+      nextZIndex = allZIndexes.length > 0 ? Math.max(...allZIndexes) + 1 : 1;
       undoStack = [];
       redoStack = [];
       get().addLog(`ゲーム状態を復元: ${name}`);

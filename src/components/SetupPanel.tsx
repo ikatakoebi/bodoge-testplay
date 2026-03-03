@@ -39,8 +39,8 @@ export function SetupPanel() {
   // プレイ人数は常に手動選択（テスト時に1人でも多人数セットアップ可能）
   const roomPlayerCount = useSyncStore((s) => s.players.length);
   const isOnline = useSyncStore((s) => !!s.roomId);
-  const [localPlayerCount, setLocalPlayerCount] = useState(2);
-  const playerCount = localPlayerCount;
+  const playerCount = useGameStore((s) => s.playerCount);
+  const setPlayerCount = useGameStore((s) => s.setPlayerCount);
 
   const storeSetupText = useGameStore((s) => s.setupText);
   const setStoreSetupText = useGameStore((s) => s.setSetupText);
@@ -135,7 +135,7 @@ export function SetupPanel() {
             <button
               key={n}
               className={`player-btn ${playerCount === n ? 'active' : ''}`}
-              onClick={() => setLocalPlayerCount(n)}
+              onClick={() => setPlayerCount(n)}
             >
               {n}人
             </button>

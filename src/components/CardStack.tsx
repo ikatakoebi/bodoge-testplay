@@ -9,10 +9,11 @@ import './CardStack.css';
 interface Props {
   stack: CardStackType;
   template: CardTemplate;
+  instanceSize?: { width: number; height: number };
   onDragEnd?: (stackId: string) => void;
 }
 
-export function CardStackComponent({ stack, template, onDragEnd }: Props) {
+export function CardStackComponent({ stack, template, instanceSize, onDragEnd }: Props) {
   const moveStack = useGameStore((s) => s.moveStack);
   const bringStackToFront = useGameStore((s) => s.bringStackToFront);
   const drawFromStack = useGameStore((s) => s.drawFromStack);
@@ -26,7 +27,8 @@ export function CardStackComponent({ stack, template, onDragEnd }: Props) {
   const gridEnabled = useUIStore((s) => s.gridEnabled);
   const cellSize = useUIStore((s) => s.cellSize);
 
-  const size = getCardSize(template);
+  const templateSize = getCardSize(template);
+  const size = instanceSize ?? templateSize;
   const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
   const drawOffsetRef = useRef(0);
   const prevCountRef = useRef(stack.cardInstanceIds.length);

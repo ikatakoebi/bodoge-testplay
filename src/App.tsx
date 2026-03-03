@@ -21,8 +21,29 @@ initSyncBridge();
 function App() {
   useSync();
 
-  // リロード後の状態復元
+  // リロード後の状態復元 or 観戦モード
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const spectateRoomId = params.get('spectate');
+
+    if (spectateRoomId) {
+      // 観戦モード: プレイヤー一覧に出ず、ゲーム状態だけ受信
+      const sync = useSyncStore.getState();
+      sync.connect();
+      const trySpectate = async () => {
+        await new Promise((r) => setTimeout(r, 600));
+        const ok = await useSyncStore.getState().spectateRoom(spectateRoomId);
+        if (ok) {
+          useUIStore.getState().addToast(`ルーム ${spectateRoomId} を観戦中`, 'info');
+          if (!useUIStore.getState().godView) {
+            useUIStore.getState().toggleGodView();
+          }
+        }
+      };
+      trySpectate();
+      return;
+    }
+
     const { autoRejoin } = useSyncStore.getState();
     autoRejoin().then((result) => {
       if (result) {

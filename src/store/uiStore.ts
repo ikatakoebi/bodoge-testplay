@@ -41,6 +41,9 @@ interface UIState {
   // エリア作成モード
   areaDrawMode: boolean;
 
+  // エリア内ドロップ時のグリッド吸着
+  areaSnap: boolean;
+
   // 神視点モード（山札以外の全カードを表向き表示）
   godView: boolean;
 
@@ -72,6 +75,7 @@ interface UIState {
   setViewportSize: (width: number, height: number) => void;
   resetView: () => void;
   setAreaDrawMode: (enabled: boolean) => void;
+  toggleAreaSnap: () => void;
   toggleGodView: () => void;
 
   addToast: (text: string, type?: ToastMessage['type']) => void;
@@ -100,6 +104,7 @@ export const useUIStore = create<UIState>((set) => ({
   isPanning: false,
   viewportSize: { width: 0, height: 0 },
   areaDrawMode: false,
+  areaSnap: false,
   godView: false,
   toasts: [],
   snapGuides: [],
@@ -137,6 +142,7 @@ export const useUIStore = create<UIState>((set) => ({
     panY: 10000 - s.viewportSize.height / 2,
   })),
   setAreaDrawMode: (enabled) => set({ areaDrawMode: enabled }),
+  toggleAreaSnap: () => set((s) => ({ areaSnap: !s.areaSnap })),
   toggleGodView: () => set((s) => ({ godView: !s.godView })),
 
   addToast: (text, type = 'info') => {

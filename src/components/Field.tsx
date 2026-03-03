@@ -113,7 +113,6 @@ export function Field() {
   const setViewportSize = useUIStore((s) => s.setViewportSize);
   const areaDrawMode = useUIStore((s) => s.areaDrawMode);
   const setAreaDrawMode = useUIStore((s) => s.setAreaDrawMode);
-  const snapGuides = useUIStore((s) => s.snapGuides);
   const addArea = useGameStore((s) => s.addArea);
 
   const defMap = new Map(cardDefinitions.map((d) => [d.id, d]));
@@ -601,11 +600,15 @@ export function Field() {
               || Object.values(cardInstances).find((c) => c.homeStackId === stack.stackId);
             const refDef = refCard ? defMap.get(refCard.definitionId) : null;
             const tmpl = resolveTemplate(cardTemplates, refDef?.template as string | undefined);
+            const refSize = refCard?.width && refCard?.height
+              ? { width: refCard.width, height: refCard.height }
+              : undefined;
             return (
               <CardStackComponent
                 key={stack.stackId}
                 stack={stack}
                 template={tmpl}
+                instanceSize={refSize}
                 onDragEnd={checkAutoStackForStack}
               />
             );
@@ -651,13 +654,6 @@ export function Field() {
             />
           )}
 
-          {snapGuides.map((g, i) =>
-            g.type === 'v' ? (
-              <div key={`sg${i}`} className="snap-guide snap-guide-v" style={{ left: g.pos + FIELD_OFFSET }} />
-            ) : (
-              <div key={`sg${i}`} className="snap-guide snap-guide-h" style={{ top: g.pos + FIELD_OFFSET }} />
-            )
-          )}
         </div>
         <Minimap />
         <RevealModal />

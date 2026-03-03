@@ -1,5 +1,7 @@
 import { useGameStore } from './gameStore';
+import { useUIStore } from './uiStore';
 import { useSyncStore, registerSyncHandlers } from './syncStore';
+import type { CardDefinition } from '../types';
 
 // フル状態のスナップショット（同期対象）
 function getGameSnapshot() {
@@ -15,6 +17,10 @@ function getGameSnapshot() {
     cardDefinitions: s.cardDefinitions,
     cardTemplates: s.cardTemplates,
     counterDefs: s.counterDefs,
+    setupText: s.setupText,
+    playerCount: s.playerCount,
+    players: s.players,
+    currentPlayerId: s.currentPlayerId,
   };
 }
 
@@ -40,9 +46,16 @@ export function initSyncBridge() {
         images: gs.images || {},
         memos: gs.memos || {},
         tokens: gs.tokens || {},
-        ...(gs.cardDefinitions?.length ? { cardDefinitions: gs.cardDefinitions } : {}),
+        ...(gs.cardDefinitions?.length ? {
+          cardDefinitions: gs.cardDefinitions,
+          cardDefinitionMap: new Map(gs.cardDefinitions.map((d: CardDefinition) => [d.id, d])),
+        } : {}),
         ...(gs.cardTemplates && Object.keys(gs.cardTemplates).length ? { cardTemplates: gs.cardTemplates } : {}),
         ...(gs.counterDefs?.length ? { counterDefs: gs.counterDefs } : {}),
+        ...(gs.setupText ? { setupText: gs.setupText } : {}),
+        ...(gs.playerCount ? { playerCount: gs.playerCount } : {}),
+        ...(gs.players?.length ? { players: gs.players } : {}),
+        ...(gs.currentPlayerId ? { currentPlayerId: gs.currentPlayerId } : {}),
       });
     }
   );
@@ -51,8 +64,8 @@ export function initSyncBridge() {
   let syncTimer: ReturnType<typeof setTimeout> | null = null;
 
   useGameStore.subscribe(() => {
-    const { isRemoteAction, roomId } = useSyncStore.getState();
-    if (isRemoteAction) return;
+    const { isRemoteAction, roomId, isSpectator } = useSyncStore.getState();
+    if (isRemoteAction || isSpectator) return;
 
     // debounce: 高頻度な更新（ドラッグ等）をまとめる
     if (syncTimer) clearTimeout(syncTimer);
@@ -70,9 +83,19 @@ export function initSyncBridge() {
       }
     }, 100);
   });
+
+  // ビューポート（zoom/pan）をlocalStorageに保存（debounce付き、リモート同期不要）
+  let viewTimer: ReturnType<typeof setTimeout> | null = null;
+  useUIStore.subscribe((s) => {
+    if (viewTimer) clearTimeout(viewTimer);
+    viewTimer = setTimeout(() => {
+      localStorage.setItem(VIEWPORT_KEY, JSON.stringify({ zoom: s.zoom, panX: s.panX, panY: s.panY }));
+    }, 300);
+  });
 }
 
 const SOLO_STATE_KEY = 'bodogeGameState';
+const VIEWPORT_KEY = 'bodogeViewport';
 
 /** ソロモードの保存済み状態を復元 */
 export function restoreSoloState() {
@@ -94,10 +117,25 @@ export function restoreSoloState() {
       images: gs.images || {},
       memos: gs.memos || {},
       tokens: gs.tokens || {},
-      ...(gs.cardDefinitions?.length ? { cardDefinitions: gs.cardDefinitions } : {}),
+      ...(gs.cardDefinitions?.length ? {
+        cardDefinitions: gs.cardDefinitions,
+        cardDefinitionMap: new Map(gs.cardDefinitions.map((d: CardDefinition) => [d.id, d])),
+      } : {}),
       ...(gs.cardTemplates && Object.keys(gs.cardTemplates).length ? { cardTemplates: gs.cardTemplates } : {}),
       ...(gs.counterDefs?.length ? { counterDefs: gs.counterDefs } : {}),
+      ...(gs.setupText ? { setupText: gs.setupText } : {}),
+      ...(gs.playerCount ? { playerCount: gs.playerCount } : {}),
+      ...(gs.players?.length ? { players: gs.players } : {}),
+      ...(gs.currentPlayerId ? { currentPlayerId: gs.currentPlayerId } : {}),
     });
+    // ビューポート復元
+    try {
+      const vp = localStorage.getItem(VIEWPORT_KEY);
+      if (vp) {
+        const { zoom, panX, panY } = JSON.parse(vp);
+        if (typeof zoom === 'number') useUIStore.setState({ zoom, panX, panY });
+      }
+    } catch { /* ignore */ }
     return true;
   } catch {
     return false;
@@ -107,4 +145,5 @@ export function restoreSoloState() {
 /** ソロモードの保存済み状態をクリア */
 export function clearSoloState() {
   localStorage.removeItem(SOLO_STATE_KEY);
+  localStorage.removeItem(VIEWPORT_KEY);
 }

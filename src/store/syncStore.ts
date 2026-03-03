@@ -51,12 +51,14 @@ interface SyncState {
   playerColor: string;
   players: PlayerInfo[];
   isRemoteAction: boolean;
+  isSpectator: boolean; // 観戦モード（プレイヤー一覧に表示されない）
 
   setPlayerInfo: (name: string, color: string) => void;
   connect: () => void;
   disconnect: () => void;
   createRoom: () => Promise<{ roomId: string; playerId: string } | null>;
   joinRoom: (roomId: string, silent?: boolean) => Promise<{ playerId: string } | null>;
+  spectateRoom: (roomId: string) => Promise<boolean>;
   sendAction: (type: string, payload: unknown) => void;
   sendFullState: (state: unknown) => void;
   autoRejoin: () => Promise<{ playerId: string } | null>;
@@ -74,6 +76,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
   playerColor: PLAYER_COLORS[Math.floor(Math.random() * PLAYER_COLORS.length)],
   players: [],
   isRemoteAction: false,
+  isSpectator: false,
 
   setPlayerInfo: (name, color) => set({ playerName: name, playerColor: color }),
 
@@ -115,7 +118,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     const { socket } = get();
     if (socket) {
       socket.disconnect();
-      set({ socket: null, connected: false, roomId: null, isHost: false, myPlayerId: null, players: [] });
+      set({ socket: null, connected: false, roomId: null, isHost: false, myPlayerId: null, players: [], isSpectator: false });
       clearSession();
     }
   },
@@ -154,15 +157,31 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     });
   },
 
+  spectateRoom: (roomId) => {
+    return new Promise((resolve) => {
+      const { socket } = get();
+      if (!socket) { resolve(false); return; }
+      socket.emit('room:spectate', { roomId }, (res: { ok: boolean; error?: string }) => {
+        if (res.ok) {
+          set({ roomId, isHost: false, isSpectator: true, myPlayerId: null });
+          resolve(true);
+        } else {
+          useUIStore.getState().addToast(res.error || '観戦に失敗しました', 'error');
+          resolve(false);
+        }
+      });
+    });
+  },
+
   sendAction: (type, payload) => {
-    const { socket, roomId, isRemoteAction } = get();
-    if (!socket || !roomId || isRemoteAction) return;
+    const { socket, roomId, isRemoteAction, isSpectator } = get();
+    if (!socket || !roomId || isRemoteAction || isSpectator) return;
     socket.emit('sync:action', { type, payload });
   },
 
   sendFullState: (state) => {
-    const { socket, roomId } = get();
-    if (!socket || !roomId) return;
+    const { socket, roomId, isSpectator } = get();
+    if (!socket || !roomId || isSpectator) return;
     socket.emit('sync:fullState', state);
   },
 

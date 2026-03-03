@@ -22,6 +22,8 @@ export interface CardInstance {
   homeStackId: string | null; // 所属元の山札のID（引かれても保持）
   locked: boolean;           // 位置ロック
   rotation: number;          // 回転角度（0, 90, 180, 270）
+  width?: number;            // インスタンス固有のサイズ上書き（画像カード用）
+  height?: number;
 }
 
 // === 山札（スタック） ===

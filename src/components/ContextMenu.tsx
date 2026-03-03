@@ -48,6 +48,7 @@ export function ContextMenu() {
   const createStack = useGameStore((s) => s.createStack);
   const addToStack = useGameStore((s) => s.addToStack);
   const collectToStack = useGameStore((s) => s.collectToStack);
+  const removeStack = useGameStore((s) => s.removeStack);
   const arrangeCardsInArea = useGameStore((s) => s.arrangeCardsInArea);
   const revealFromStack = useGameStore((s) => s.revealFromStack);
   const currentPlayerId = useGameStore((s) => s.currentPlayerId);
@@ -169,7 +170,7 @@ export function ContextMenu() {
             flipCards(selectedCardIds, 'public', null);
             addLog(`${selectedCardIds.length}枚のカードをオープンにした`);
           })}>
-            全てオープン
+            全てオープン (O)
           </button>
           <button className="context-menu-item" onClick={() => handleAction(() => {
             flipCards(selectedCardIds, 'hidden', null);
@@ -221,19 +222,19 @@ export function ContextMenu() {
               <div className="context-menu-separator" />
             </>
           )}
-          <button className="context-menu-item" onClick={() => handleAction(() => {
+          <button className="context-menu-item" disabled={card?.visibility === 'owner'} onClick={() => handleAction(() => {
             flipCard(targetId, 'owner', currentPlayerId);
             addLog('カードをめくった（自分だけ）');
           })}>
             めくる（自分だけ）
           </button>
-          <button className="context-menu-item" onClick={() => handleAction(() => {
+          <button className="context-menu-item" disabled={card?.visibility === 'public'} onClick={() => handleAction(() => {
             flipCard(targetId, 'public', null);
             addLog('カードをオープンにした');
           })}>
-            オープンにする
+            オープンにする (O)
           </button>
-          <button className="context-menu-item" onClick={() => handleAction(() => {
+          <button className="context-menu-item" disabled={card?.visibility === 'hidden'} onClick={() => handleAction(() => {
             flipCard(targetId, 'hidden', null);
             addLog('カードを裏に戻した');
           })}>
@@ -267,26 +268,13 @@ export function ContextMenu() {
               ))}
             </>
           )}
-          {Object.keys(cardStacks).length > 0 && (
-            <>
-              <div className="context-menu-separator" />
-              <button className="context-menu-item" onClick={() => handleAction(() => {
-                const c = cardInstances[targetId!];
-                // homeStackIdがあればそこに戻す、なければ最近の山
-                const homeStack = c.homeStackId ? cardStacks[c.homeStackId] : null;
-                const targetStack = homeStack ?? Object.values(cardStacks).reduce<typeof cardStacks[string] | null>((best, s) => {
-                  if (!best) return s;
-                  return Math.hypot(s.x - c.x, s.y - c.y) < Math.hypot(best.x - c.x, best.y - c.y) ? s : best;
-                }, null);
-                if (targetStack) {
-                  addToStack(targetStack.stackId, targetId!);
-                  addLog('カードを山札に戻した');
-                }
-              })}>
-                山札に戻す
-              </button>
-            </>
-          )}
+          <div className="context-menu-separator" />
+          <button className="context-menu-item" disabled={!card?.homeStackId || !cardStacks[card.homeStackId!]} onClick={() => handleAction(() => {
+            addToStack(card!.homeStackId!, targetId!);
+            addLog('カードを山札に戻した');
+          })}>
+            山札に戻す
+          </button>
           <div className="context-menu-separator" />
           <button className="context-menu-item" onClick={() => handleAction(() => {
             rotateCard(targetId, 90);
@@ -306,23 +294,46 @@ export function ContextMenu() {
       {targetType === 'stack' && targetId && (
         <>
           <button className="context-menu-item" onClick={() => handleAction(() => {
-            drawFromStack(targetId, 1);
+            const drawn = drawFromStack(targetId, 1);
+            drawn.forEach((c) => flipCard(c.instanceId, 'owner', currentPlayerId));
             addLog('山札から1枚引いた');
           })}>
             1枚引く
           </button>
-          <button className="context-menu-item" onClick={() => {
-            hideContextMenu();
-            showModal('何枚引きますか？', '3', 'text', (input) => {
-              const n = parseInt(input, 10);
-              if (isNaN(n) || n < 1) return;
-              saveSnapshot();
-              drawFromStack(targetId, n);
-              addLog(`山札から${n}枚引いた`);
-            });
-          }}>
-            N枚引く...
+          <div className="context-menu-submenu">
+            <button className="context-menu-item">複数枚引く</button>
+            <div className="context-menu-submenu-items">
+              {[1,2,3,4,5,6,7,8,9,10].map((n) => (
+                <button key={n} className="context-menu-item" onClick={() => handleAction(() => {
+                  const drawn = drawFromStack(targetId, n);
+                  drawn.forEach((c) => flipCard(c.instanceId, 'owner', currentPlayerId));
+                  addLog(`山札から${n}枚引いた`);
+                })}>
+                  {n} 枚
+                </button>
+              ))}
+            </div>
+          </div>
+          <button className="context-menu-item" onClick={() => handleAction(() => {
+            drawFromStack(targetId, 1);
+            addLog('山札から裏向きのまま1枚引いた');
+          })}>
+            裏向きのまま1枚引く
           </button>
+          <div className="context-menu-submenu">
+            <button className="context-menu-item">裏向きのまま複数枚引く</button>
+            <div className="context-menu-submenu-items">
+              {[1,2,3,4,5,6,7,8,9,10].map((n) => (
+                <button key={n} className="context-menu-item" onClick={() => handleAction(() => {
+                  drawFromStack(targetId, n);
+                  addLog(`山札から裏向きのまま${n}枚引いた`);
+                })}>
+                  {n} 枚
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="context-menu-separator" />
           {topCardPeeked ? (
             <button className="context-menu-item" onClick={() => handleAction(() => {
               unpeekStack(targetId);
@@ -373,7 +384,22 @@ export function ContextMenu() {
             collectToStack(targetId!);
             addLog('全てのカードを山札に集めた');
           })}>
-            全部この山札に戻す
+            すべて集める
+          </button>
+          <button className="context-menu-item" disabled={Object.keys(cardStacks).length < 2} onClick={() => {
+            hideContextMenu();
+            showModal('合わせる山札を選択（山札をクリック）', '', 'confirm', () => {
+              // 簡易: 他の山札の上にドラッグで合わせる機能は既にある
+            });
+          }}>
+            山札を合わせる
+          </button>
+          <div className="context-menu-separator" />
+          <button className="context-menu-item context-menu-item-danger" onClick={() => handleAction(() => {
+            removeStack(targetId!);
+            addLog('山札を削除した');
+          })}>
+            削除
           </button>
         </>
       )}

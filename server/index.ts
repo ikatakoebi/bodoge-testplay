@@ -8,6 +8,7 @@ import { existsSync } from 'fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distPath = path.resolve(__dirname, '../dist');
+const serverStartedAt = Date.now();
 
 const app = express();
 app.use((_req, res, next) => {
@@ -39,6 +40,23 @@ interface RoomState {
 
 const rooms = new Map<string, RoomState>();
 
+// === イベントログ ===
+interface EventEntry {
+  timestamp: number;
+  type: 'connect' | 'disconnect' | 'room:create' | 'room:join' | 'room:leave' | 'room:delete';
+  detail: string;
+}
+const MAX_EVENT_LOG = 200;
+const eventLog: EventEntry[] = [];
+
+function pushEvent(type: EventEntry['type'], detail: string) {
+  const entry: EventEntry = { timestamp: Date.now(), type, detail };
+  eventLog.push(entry);
+  if (eventLog.length > MAX_EVENT_LOG) eventLog.shift();
+  // リアルタイムで管理画面に通知
+  io.to('admin-room').emit('admin:event', entry);
+}
+
 // === Google Sheets レスポンスキャッシュ (TTL: 5分) ===
 interface SheetCacheEntry {
   data: Record<string, string | null>;
@@ -59,7 +77,32 @@ function assignPlayerId(room: RoomState): string {
 
 io.on('connection', (socket) => {
   console.log(`[connect] ${socket.id}`);
+  pushEvent('connect', socket.id);
   let currentRoom: string | null = null;
+
+  // 管理画面購読
+  socket.on('admin:subscribe', () => {
+    socket.join('admin-room');
+  });
+
+  // 観戦モード（プレイヤー一覧に表示されない）
+  let isSpectator = false;
+  socket.on('room:spectate', (data: { roomId: string }, callback) => {
+    const room = rooms.get(data.roomId);
+    if (!room) {
+      callback({ ok: false, error: 'ルームが見つかりません' });
+      return;
+    }
+    socket.join(data.roomId);
+    currentRoom = data.roomId;
+    isSpectator = true;
+    console.log(`[room:spectate] ${socket.id} → ${data.roomId}`);
+    callback({ ok: true, roomId: data.roomId });
+    // 既存の状態を送信
+    if (room.gameState) {
+      socket.emit('sync:fullState', room.gameState);
+    }
+  });
 
   // ルーム作成
   socket.on('room:create', (data: { playerName: string; playerColor: string }, callback) => {
@@ -78,6 +121,7 @@ io.on('connection', (socket) => {
     currentRoom = roomId;
 
     console.log(`[room:create] ${roomId} by ${data.playerName} (${playerId})`);
+    pushEvent('room:create', `${roomId} by ${data.playerName}`);
     callback({ ok: true, roomId, isHost: true, playerId });
     io.to(roomId).emit('room:players', getPlayerList(room));
   });
@@ -100,6 +144,7 @@ io.on('connection', (socket) => {
     currentRoom = data.roomId;
 
     console.log(`[room:join] ${data.playerName} (${playerId}) → ${data.roomId}`);
+    pushEvent('room:join', `${data.playerName} → ${data.roomId}`);
     callback({ ok: true, roomId: data.roomId, isHost: false, playerId });
     io.to(data.roomId).emit('room:players', getPlayerList(room));
 
@@ -128,9 +173,14 @@ io.on('connection', (socket) => {
   // 切断
   socket.on('disconnect', () => {
     console.log(`[disconnect] ${socket.id}`);
-    if (currentRoom) {
+    pushEvent('disconnect', socket.id);
+    if (currentRoom && !isSpectator) {
       const room = rooms.get(currentRoom);
       if (room) {
+        const leaving = room.players.get(socket.id);
+        if (leaving) {
+          pushEvent('room:leave', `${leaving.name} left ${currentRoom}`);
+        }
         room.players.delete(socket.id);
         if (room.players.size === 0) {
           // リロード対応: 15秒間ルームを保持してから削除
@@ -140,6 +190,7 @@ io.on('connection', (socket) => {
             if (r && r.players.size === 0) {
               rooms.delete(roomId);
               console.log(`[room:delete] ${roomId} (empty, grace period expired)`);
+              pushEvent('room:delete', roomId);
             }
           }, 15000);
           console.log(`[room:empty] ${currentRoom} (waiting 15s for reconnect)`);
@@ -171,6 +222,76 @@ function getPlayerList(room: RoomState) {
 app.get('/health', (_req, res) => {
   res.json({ ok: true, rooms: rooms.size });
 });
+
+// === 管理ダッシュボード ===
+
+function getAdminStats() {
+  let totalPlayers = 0;
+  for (const room of rooms.values()) {
+    totalPlayers += room.players.size;
+  }
+  const mem = process.memoryUsage();
+  return {
+    uptime: Date.now() - serverStartedAt,
+    startedAt: serverStartedAt,
+    memory: {
+      rss: mem.rss,
+      heapUsed: mem.heapUsed,
+      heapTotal: mem.heapTotal,
+    },
+    connections: io.engine.clientsCount,
+    rooms: rooms.size,
+    totalPlayers,
+    sheetCacheEntries: sheetCache.size,
+  };
+}
+
+function getAdminRooms() {
+  return Array.from(rooms.values()).map((room) => {
+    const stateSize = room.gameState ? JSON.stringify(room.gameState).length : 0;
+    const players = Array.from(room.players.entries()).map(([sid, p]) => ({
+      socketId: sid,
+      name: p.name,
+      color: p.color,
+      playerId: p.playerId,
+      isHost: sid === room.hostId,
+    }));
+    return {
+      roomId: room.roomId,
+      playerCount: room.players.size,
+      players,
+      stateSize,
+      hasEmptyTimer: room.emptyTimer !== null,
+    };
+  });
+}
+
+app.get('/api/admin/stats', (_req, res) => {
+  res.json(getAdminStats());
+});
+
+app.get('/api/admin/rooms', (_req, res) => {
+  res.json(getAdminRooms());
+});
+
+app.get('/api/admin/events', (_req, res) => {
+  res.json(eventLog);
+});
+
+app.get('/admin', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+// 管理画面へ定期的にstats配信（5秒ごと）
+setInterval(() => {
+  const sockets = io.sockets.adapter.rooms.get('admin-room');
+  if (sockets && sockets.size > 0) {
+    io.to('admin-room').emit('admin:stats', {
+      stats: getAdminStats(),
+      rooms: getAdminRooms(),
+    });
+  }
+}, 5000);
 
 // Google Sheetsからゲームデータを取得するプロキシ（メモリキャッシュ付き）
 // シートを「リンクを知っている全員が閲覧可」にする必要あり

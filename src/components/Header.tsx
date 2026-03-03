@@ -27,6 +27,8 @@ export function Header() {
 
   const gridEnabled = useUIStore((s) => s.gridEnabled);
   const toggleGrid = useUIStore((s) => s.toggleGrid);
+  const areaSnap = useUIStore((s) => s.areaSnap);
+  const toggleAreaSnap = useUIStore((s) => s.toggleAreaSnap);
   const godView = useUIStore((s) => s.godView);
   const toggleGodView = useUIStore((s) => s.toggleGodView);
   const toggleHelp = useUIStore((s) => s.toggleHelp);
@@ -300,6 +302,13 @@ export function Header() {
           onClick={toggleGrid}
         >
           {gridEnabled ? 'Grid ON' : 'Grid OFF'}
+        </button>
+        <button
+          className={`header-btn ${areaSnap ? 'active' : ''}`}
+          onClick={toggleAreaSnap}
+          title="エリア内ドロップ時にグリッド吸着する"
+        >
+          {areaSnap ? '吸着 ON' : '吸着 OFF'}
         </button>
         <CsvUpload />
         <label className="csv-upload-btn">
