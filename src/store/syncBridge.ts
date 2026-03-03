@@ -64,26 +64,28 @@ export function initSyncBridge() {
     (patch) => {
       if (prevSnapshotObj) {
         applyPatch(prevSnapshotObj, patch as any);
+        // パッチが変更したフィールドの参照を新しくしてZustandに変更を検知させる
+        const ops = patch as { path: string }[];
+        const changedKeys = new Set(ops.map(op => op.path.split('/')[1]));
         const gs = prevSnapshotObj as ReturnType<typeof getGameSnapshot>;
-        useGameStore.setState({
-          cardInstances: gs.cardInstances || {},
-          cardStacks: gs.cardStacks || {},
-          areas: gs.areas || [],
-          counters: gs.counters || {},
-          images: gs.images || {},
-          memos: gs.memos || {},
-          tokens: gs.tokens || {},
-          ...(gs.cardDefinitions?.length ? {
-            cardDefinitions: gs.cardDefinitions,
-            cardDefinitionMap: new Map(gs.cardDefinitions.map((d: CardDefinition) => [d.id, d])),
-          } : {}),
-          ...(gs.cardTemplates && Object.keys(gs.cardTemplates).length ? { cardTemplates: gs.cardTemplates } : {}),
-          ...(gs.counterDefs?.length ? { counterDefs: gs.counterDefs } : {}),
-          ...(gs.setupText ? { setupText: gs.setupText } : {}),
-          ...(gs.playerCount ? { playerCount: gs.playerCount } : {}),
-          ...(gs.players?.length ? { players: gs.players } : {}),
-          ...(gs.currentPlayerId ? { currentPlayerId: gs.currentPlayerId } : {}),
-        });
+        const update: Record<string, unknown> = {};
+        for (const key of changedKeys) {
+          if (key in gs) {
+            const val = (gs as any)[key];
+            // 配列やオブジェクトはスプレッドで新しい参照を作る
+            if (Array.isArray(val)) {
+              update[key] = [...val];
+            } else if (val && typeof val === 'object') {
+              update[key] = { ...val };
+            } else {
+              update[key] = val;
+            }
+          }
+        }
+        if (changedKeys.has('cardDefinitions') && gs.cardDefinitions?.length) {
+          update.cardDefinitionMap = new Map(gs.cardDefinitions.map((d: CardDefinition) => [d.id, d]));
+        }
+        useGameStore.setState(update);
       }
     }
   );
